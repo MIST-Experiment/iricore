@@ -1,6 +1,6 @@
 module mod
 
-real, allocatable, dimension(:, :, :) :: outf_out
+real, allocatable, dimension(:, :, :) :: iri_res
 
 contains
 subroutine iri_core(JF,JMAG,GLAT,GLON,IYYYY,MMDD,DHOUR,HEIBEG,HEIEND,HEISTP,OARR,datadir)
@@ -26,7 +26,7 @@ subroutine iri_core(JF,JMAG,GLAT,GLON,IYYYY,MMDD,DHOUR,HEIBEG,HEIEND,HEISTP,OARR
       call IRI_SUB(JF,JMAG,GLAT(i),GLON(i),IYYYY,MMDD,DHOUR,HEIBEG,HEIEND,HEISTP, OUTF, OARR, datadir)
       do j = 1, 20
           do k = 1, 1000
-              outf_out(j, k, i) = OUTF(j, k)
+              iri_res(j, k, i) = OUTF(j, k)
           end do
       end do
   end do
