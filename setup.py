@@ -31,6 +31,8 @@ if __name__ == "__main__":
           package_dir={"": "src"},
           packages=find_packages(where="src"),
           ext_modules=[iri_fcore],
+          package_data={'': ['*.asc', 'src/iricore/data/ccir/*.asc']},
+          include_package_data=True,
           python_requires=">=3.7, <3.10",
           classifiers=[
               # How mature is this project? Common values are
