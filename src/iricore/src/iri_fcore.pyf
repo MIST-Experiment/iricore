@@ -1,0 +1,29 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module iri_fcore ! in 
+    interface  ! in :iri_fcore
+        module mod ! in :iri_fcore:iri_fcore.f90
+            real, allocatable,dimension(:,:,:) :: iri_res
+            subroutine iri_core(jf,jmag,glat,glon,iyyyy,mmdd,dhour,heibeg,heiend,heistp,oarr,datadir) ! in :iri_fcore:iri_fcore.f90:mod
+                logical dimension(50),intent(in) :: jf
+                logical intent(in) :: jmag
+                real dimension(:),intent(in) :: glat
+                real dimension(:),intent(in) :: glon
+                integer intent(in) :: iyyyy
+                integer intent(in) :: mmdd
+                real intent(in) :: dhour
+                real intent(in) :: heibeg
+                real intent(in) :: heiend
+                real intent(in) :: heistp
+                real dimension(100),intent(inout) :: oarr
+                character*(*) intent(in) :: datadir
+                character(len=256) :: datadir1
+                common /folders/ datadir1
+            end subroutine iri_core
+        end module mod
+    end interface 
+end python module iri_fcore
+
+! This file was auto-generated with f2py (version:1.21.6).
+! See http://cens.ioc.ee/projects/f2py2e/

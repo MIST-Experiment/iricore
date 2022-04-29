@@ -6,10 +6,10 @@ import os
 
 def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], lons: Iterable[float]) -> dict:
     try:
-        from . import iri_core as core
+        from . import iri_fcore as core
+        # import iri_core as core
     except ImportError:
-        raise ImportError("Cannot import compiled IRI library. Try running -> python3 -c 'from iricore import build; "
-                          "build()'")
+        raise ImportError("Cannot import compiled IRI library.")
 
     lats = np.asarray(lats)
     lons = np.asarray(lons)
