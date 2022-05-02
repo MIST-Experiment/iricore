@@ -3,14 +3,19 @@ from typing import Iterable
 from datetime import datetime
 import os
 
+
 try:
     from . import iri_fcore as core
-    # import iri_core as core
 except ImportError:
     raise ImportError("Cannot import compiled IRI library.")
 
 
 def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], lons: Iterable[float]) -> dict:
+    try:
+        from . import iri_fcore as core
+    except ImportError:
+        raise ImportError("Cannot import compiled IRI library.")
+
     lats = np.asarray(lats)
     lons = np.asarray(lons)
 

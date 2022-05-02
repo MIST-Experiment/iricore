@@ -13,12 +13,11 @@ iri_fcore = Extension(
     sources=[os.path.join(here, 'src/iricore/src/') + fs for fs in fsources],
     extra_f90_compile_args=['-fPIC', '-O3', '-w', '-Wtabs'],
     extra_f77_compile_args=['-fPIC', '-O3', '-w', '-Wtabs'],
-    f2py_options=['--fcompiler=gnu95', '--compiler=mingw32'],
 )
 
 if __name__ == "__main__":
     setup(name='iricore',
-          version="1.0.2",
+          version="1.0.0",
           author="lap1dem",
           author_email="vadym.bidula@gmail.com",
           url='https://github.com/lap1dem/iricore',
@@ -32,7 +31,7 @@ if __name__ == "__main__":
           package_dir={"": "src"},
           packages=find_packages(where="src"),
           ext_modules=[iri_fcore],
-          # include_package_data=True,
+          include_package_data=True,
           package_data={
               "iricore": [
               "data/ccir/*.asc",
@@ -44,11 +43,7 @@ if __name__ == "__main__":
           },
           python_requires=">=3.7, <3.10",
           classifiers=[
-              # How mature is this project? Common values are
-              #   3 - Alpha
-              #   4 - Beta
-              #   5 - Production/Stable
-              "Development Status :: 4 - Beta",
+              "Development Status :: 5 - Production/Stable",
               "License :: OSI Approved :: MIT License",
               "Programming Language :: Python :: 3",
               "Programming Language :: Python :: 3.7",
