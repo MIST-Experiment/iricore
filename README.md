@@ -1,26 +1,38 @@
 # iricore
-A fork of [iri2016](https://github.com/space-physics/iri2016). `iricore` implements a few optimizations to the `iri2016`
-core Fortran code and Python interface to make it faster.
+A fork of [iri2016](https://github.com/space-physics/iri2016). `iricore` implements a couple of optimizations to the `iri2016`
+core Fortran code and Python interface to make it faster:
+1. Optimization of data files reading gives boost in case of iteration over large list of coordinates;
+2. `f2py` interface provides faster communication between Python and Fortran.
 
-Currently in development.
+Overall, this gives up to ~100x performance boost (see `examples/comparison.py`).
 
-[//]: # (## Installing)
+**Important!** Because this package is mainly used for the [MIST experiment](http://www.physics.mcgill.ca/mist/), 
+the `iricore` cuts off calculation of unnecessary atmospheric parameters available in `iri2016`, leaving only electron density
+and electron temperature. All other parameters can be restored on demand (please contact me).
 
-[//]: # (Prerequisites)
+## Installation
 
-[//]: # (- MPI implementation, for example)
+This package proved to work under Linux only (due to compilation difficulties in Windows). 
+If you are using Windows - consider isntalling [WSL](https://docs.microsoft.com/en-us/windows/wsl/install).
 
-[//]: # (  - [Open MPI]&#40;https://www.open-mpi.org/&#41; )
+### Prerequisites
+- Git
+```
+sudo apt instal git
+```
 
-[//]: # (  - [MPICH]&#40;https://www.mpich.org/&#41;)
+- Fortran compiler, e.g. `gfortran`
+```
+sudo apt isntall gfortran
+```
 
-[//]: # (  - [Microsoft MPI]&#40;https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi&#41; &#40;for Windows&#41;)
-
+### Installing package
 [//]: # ()
 [//]: # (Then you can install the package via pip)
 
-[//]: # (```)
+```
+python3 -m pip install git+https://github.com/lap1dem/iricore
+```
 
-[//]: # (python3 -m pip install mistion)
-
-[//]: # (```)
+## Usage
+For usage examples see `examples/`.
