@@ -2,6 +2,9 @@ import numpy as np
 from typing import Iterable
 from datetime import datetime
 import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
 
 try:
@@ -23,7 +26,7 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], l
         raise ValueError("Lengths of latitude and longitude arrays must be equal.")
 
     jf = np.ones(50, dtype=bool)
-    jf[[3, 4, 5, 11, 21, 22, 25, 27, 28, 29, 32, 34, 35]] = 0
+    jf[[3, 4, 5, 11, 21, 22, 25, 27, 28, 29, 32, 33, 34, 35, 36]] = 0
     jmag = 0
     mmdd = 100 * dt.month + dt.day
     dhour = dt.hour + dt.minute / 60 + dt.second / 3600
