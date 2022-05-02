@@ -27,12 +27,26 @@ sudo apt isntall gfortran
 ```
 
 ### Installing package
-[//]: # ()
-[//]: # (Then you can install the package via pip)
+Now you can simply install it via `pip`:
 
 ```
 python3 -m pip install git+https://github.com/lap1dem/iricore
 ```
+
+## Data files
+`IRI2016` model depends on [data files](http://irimodel.org/indices/) which are regularly updated.
+`iricore` does not autoupdate those, but provides tool for quick update. You can run from terminal
+```
+python3 -c "import iricore; iricore.update()"
+```
+
+or add
+
+```
+import iricore
+iricore.update()
+```
+to any Python script.
 
 ## Usage
 For usage examples see `examples/`.
