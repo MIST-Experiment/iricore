@@ -13,7 +13,7 @@ iri_fcore = Extension(
     sources=[os.path.join(here, 'src/iricore/src/') + fs for fs in fsources],
     extra_f90_compile_args=['-fPIC', '-O3', '-w', '-Wtabs'],
     extra_f77_compile_args=['-fPIC', '-O3', '-w', '-Wtabs'],
-    f2py_options=['--compiler=mingw32'],
+    # f2py_options=['--compiler=mingw32'],
 )
 
 if __name__ == "__main__":
