@@ -26,7 +26,7 @@ if __name__ == "__main__":
           long_description=open('README.md').read(),
           long_description_content_type="text/markdown",
           install_requires=[
-              "numpy >= 1.21",
+              "numpy",
           ],
           package_dir={"": "src"},
           packages=find_packages(where="src"),
