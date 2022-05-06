@@ -17,7 +17,7 @@ iri_fcore = Extension(
 
 if __name__ == "__main__":
     setup(name='iricore',
-          version="1.0.0",
+          version="1.0.1",
           author="lap1dem",
           author_email="vadym.bidula@gmail.com",
           url='https://github.com/lap1dem/iricore',
