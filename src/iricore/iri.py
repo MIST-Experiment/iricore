@@ -9,7 +9,7 @@ except ImportError:
     raise ImportError("Cannot import compiled IRI library.")
 
 
-class MissingDataError(Exeption):
+class MissingDataError(Exception):
     pass
 
 
