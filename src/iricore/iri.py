@@ -37,4 +37,6 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], l
         'ne': ne[ne > -1].reshape((len(lats), -1)),
         'te': te[ne > -1].reshape((len(lats), -1)),
     }
+    if len(res['ne']) == 0 or len(res['te']) == 0:
+        raise ValueError("No data for specified datetime or height.")
     return res
