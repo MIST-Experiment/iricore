@@ -3,11 +3,14 @@ from typing import Iterable
 from datetime import datetime
 import os
 
-
 try:
     from . import iri_fcore as core
 except ImportError:
     raise ImportError("Cannot import compiled IRI library.")
+
+
+class DataMissingError(Exeption):
+    pass
 
 
 def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], lons: Iterable[float]) -> dict:
@@ -30,7 +33,8 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], l
     oarr = np.zeros(100, dtype=np.float32)
     core.mod.iri_res = np.zeros((20, 1000, len(lats)), dtype=np.float32)
     datadir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/')
-    core.mod.iri_core(jf, jmag, lats, lons, dt.year, mmdd, dhour + 25., alt_range[0], alt_range[1], alt_range[2], oarr, datadir)
+    core.mod.iri_core(jf, jmag, lats, lons, dt.year, mmdd, dhour + 25., alt_range[0], alt_range[1], alt_range[2], oarr,
+                      datadir)
     ne = core.mod.iri_res[0].transpose()
     te = core.mod.iri_res[3].transpose()
     res = {
@@ -38,5 +42,5 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], l
         'te': te[ne > -1].reshape((len(lats), -1)),
     }
     if len(res['ne'][0]) == 0 or len(res['te'][0]) == 0:
-        raise ValueError("No data for specified datetime or height.")
+        raise DataMissingError("No IRI data for specified datetime or height. Try update data with iricore.update().")
     return res
