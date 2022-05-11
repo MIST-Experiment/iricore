@@ -13,7 +13,8 @@ class MissingDataError(Exception):
     pass
 
 
-def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], lons: Iterable[float]) -> dict:
+def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], lons: Iterable[float],
+        replace_missing: float = np.nan) -> dict:
     try:
         from . import iri_fcore as core
     except ImportError:
@@ -37,10 +38,11 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], l
                       datadir)
     ne = core.mod.iri_res[0].transpose()
     te = core.mod.iri_res[3].transpose()
+    nalts = int((alt_range[1] - alt_range[0]) / alt_range[2]) + 1
+    ne = ne.reshape((len(lats), -1))[:, :nalts]
+    te = te.reshape((len(lats), -1))[:, :nalts]
     res = {
-        'ne': ne[ne > -1].reshape((len(lats), -1)),
-        'te': te[ne > -1].reshape((len(lats), -1)),
+        'ne': np.where(ne < 0, replace_missing, ne),
+        'te': np.where(te < 0, replace_missing, te),
     }
-    if len(res['ne'][0]) == 0 or len(res['te'][0]) == 0:
-        raise MissingDataError("No IRI data for specified datetime or height. Try update data with iricore.update().")
     return res
