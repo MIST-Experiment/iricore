@@ -18,10 +18,11 @@ iri_fcore = Extension(
 if __name__ == "__main__":
     # noinspection PyInterpreter
     setup(name='iricore',
-          version="1.0.3",
+          version="1.0.0",
           author="lap1dem",
           author_email="vadym.bidula@gmail.com",
           url='https://github.com/lap1dem/iricore',
+          download_url='https://github.com/lap1dem/iricore/archive/refs/tags/1.0.0.tar.gz',
           license='LICENSE',
           description='A python interface to iri2016 Fortran code',
           long_description=open('README.md').read(),
