@@ -200,7 +200,9 @@ C**************** ALL-IN-ONE SUBROUTINE  *************************
 C*****************************************************************
 C
 C
-       SUBROUTINE IRI_SUB(JF,JMAG,ALATI,ALONG,IYYYY,MMDD,DHOUR,
+
+C------------------------
+        SUBROUTINE IRI_SUB(JF,JMAG,ALATI,ALONG,IYYYY,MMDD,DHOUR,
      &    HEIBEG,HEIEND,HEISTP,OUTF,OARR,datadir)
 C-----------------------------------------------------------------
 C
@@ -1183,6 +1185,7 @@ C
           endif
 
 7797    URSIFO=URSIF2
+        !$OMP CRITICAL
         WRITE(FILNAM,104) MONTH+10
 104         FORMAT('ccir',I2,'.asc')
 c-web-for webversion
@@ -1192,6 +1195,7 @@ c104     FORMAT('/var/www/omniweb/cgi/vitmo/IRI/ccir',I2,'.asc')
         READ(IUCCIR,4689) F2,FM3
 4689    FORMAT(1X,4E15.8)
         CLOSE(IUCCIR)
+        !$OMP CRITICAL
 C
 C then URSI if chosen ....................................
 C
@@ -1202,7 +1206,9 @@ c-web-for webversion
 c1144    FORMAT('/var/www/omniweb/cgi/vitmo/IRI/ursi',I2,'.asc')
           OPEN(IUCCIR,FILE=trim(datadir1)//'/ursi/'//FILNAM,
      &         STATUS='OLD', FORM='FORMATTED')
+        !$OMP CRITICAL
           READ(IUCCIR,4689) F2
+         !$OMP END CRITICAL
           CLOSE(IUCCIR)
         endif
 
@@ -1216,22 +1222,25 @@ C
 c
 c first CCIR ..............................................
 c
-
         WRITE(FILNAM,104) NMONTH+10
         OPEN(IUCCIR,FILE=trim(datadir1)//'/ccir/'//FILNAM,
      &          STATUS='OLD', FORM='FORMATTED')
+        !$OMP CRITICAL
         READ(IUCCIR,4689) F2N,FM3N
+        !$OMP END CRITICAL
         CLOSE(IUCCIR)
 
 C
 C then URSI if chosen .....................................
 C
         if(URSIF2) then
+        !$OMP CRITICAL
           WRITE(FILNAM,1144) NMONTH+10
           OPEN(IUCCIR,FILE=trim(datadir1)//'/ursi/'//FILNAM,
      &         STATUS='OLD', FORM='FORMATTED')
           READ(IUCCIR,4689) F2N
           CLOSE(IUCCIR)
+        !$OMP END CRITICAL
           endif
 
         GOTO 4291
