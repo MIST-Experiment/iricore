@@ -18,7 +18,7 @@ iri_fcore = Extension(
 if __name__ == "__main__":
     # noinspection PyInterpreter
     setup(name='iricore',
-          version="1.0.0",
+          version="1.0.5",
           author="lap1dem",
           author_email="vadym.bidula@gmail.com",
           url='https://github.com/lap1dem/iricore',
@@ -28,7 +28,7 @@ if __name__ == "__main__":
           long_description=open('README.md').read(),
           long_description_content_type="text/markdown",
           install_requires=[
-              "numpy",
+              "numpy>=1.21",
           ],
           package_dir={"": "src"},
           packages=find_packages(where="src"),
