@@ -18,7 +18,7 @@ iri_fcore = Extension(
 if __name__ == "__main__":
     # noinspection PyInterpreter
     setup(name='iricore',
-          version="1.0.5",
+          version="1.0.6",
           author="lap1dem",
           author_email="vadym.bidula@gmail.com",
           url='https://github.com/lap1dem/iricore',

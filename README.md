@@ -30,7 +30,7 @@ sudo apt isntall gfortran
 Now you can simply install it via `pip`:
 
 ```
-python3 -m pip install git+https://github.com/lap1dem/iricore
+python3 -m pip install iricore
 ```
 
 ## Data files
