@@ -1,6 +1,21 @@
+[tool.poetry]
+name = "iricore"
+version = "1.0.8"
+description = ""
+authors = ["lap1dem <vadym.bidula@gmail.com>"]
+readme = "README.md"
+build = "build.py"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.23.3"
+tqdm = "^4.64.1"
+matplotlib = "^3.6.0"
+
+
+[tool.poetry.group.dev.dependencies]
+setuptools-cpp = "^0.1.0"
+
 [build-system]
-requires = [
-    "setuptools",
-    "numpy>=1.21"
-]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core",  "wheel", "setuptools_cpp"]
+build-backend = "poetry.core.masonry.api"
