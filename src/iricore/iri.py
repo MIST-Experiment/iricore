@@ -8,7 +8,6 @@ from numpy.ctypeslib import as_ctypes
 
 cfd = os.path.dirname(os.path.abspath(__file__))
 iri2016 = np.ctypeslib.load_library("libiri2016", cfd)
-# iri2016 = np.ctypeslib.load_library("libiri2016", os.path.join(cfd, "iri2016"))
 iri2020 = np.ctypeslib.load_library("libiri2020", cfd)
 
 IRI_VERSIONS = ['16', '20']

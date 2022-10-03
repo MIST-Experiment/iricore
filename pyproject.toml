@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iricore"
-version = "1.0.9"
+version = "1.0.10"
 description = ""
 authors = ["lap1dem <vadym.bidula@gmail.com>"]
 readme = "README.md"
