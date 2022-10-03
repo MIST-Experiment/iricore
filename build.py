@@ -8,6 +8,8 @@ ext_modules = [
 
 
 def build(setup_kwargs: Dict[str, Any]) -> None:
+    from src.iricore import update_iri
+    update_iri()
     setup_kwargs.update(
         {
             "ext_modules": ext_modules,

@@ -9,16 +9,16 @@ from numpy.ctypeslib import as_ctypes
 cfd = os.path.dirname(os.path.abspath(__file__))
 iri2016 = np.ctypeslib.load_library("libiri2016", cfd)
 # iri2016 = np.ctypeslib.load_library("libiri2016", os.path.join(cfd, "iri2016"))
-# iri2020 = np.ctypeslib.load_library("libiri2020", os.path.join(cfd, "iri2020"))
+iri2020 = np.ctypeslib.load_library("libiri2020", cfd)
 
-IRI_VERSIONS = ['16']
+IRI_VERSIONS = ['16', '20']
 
 def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], lons: Iterable[float],
         replace_missing: float = np.nan, version=16) -> dict:
     if version == 16:
         iricore = iri2016
-    # elif version == 20:
-    #     iricore = iri2020
+    elif version == 20:
+        iricore = iri2020
     else:
         raise ValueError(f"Available IRI versions: " + ", ".join(IRI_VERSIONS))
     lats = np.asarray(lats)

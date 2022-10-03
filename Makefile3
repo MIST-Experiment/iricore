@@ -1,0 +1,3 @@
+default:
+	gfortran -shared iri_fcore.f90 irisub.for irifun.for iritec.for iridreg.for igrf.for cira.for iriflip.for -fPIC -O3 -w -o iricore.so
+	mv iricore.so ../
