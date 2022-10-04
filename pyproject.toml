@@ -12,13 +12,13 @@ numpy = [
     {version = "^1.21", python = "~3.7"},
     {version = "^1.22", python = "^3.8"},
 ]
-tqdm = "^4.64.1"
-matplotlib = "^3.6.0"
-cmake-build-extension = "^0.5.1"
 
 
 [tool.poetry.group.dev.dependencies]
 setuptools-cpp = "^0.1.0"
+tqdm = "^4.64.1"
+matplotlib = "^3.6.0"
+cmake-build-extension = "^0.5.1"
 
 [build-system]
 requires = ["cmake", "poetry-core",  "wheel", "setuptools-cpp"]
