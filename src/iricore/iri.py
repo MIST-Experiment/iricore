@@ -70,7 +70,6 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], l
 
     iri_res = np.ascontiguousarray(iri_res)
     ne = iri_res[0].transpose()
-    print(ne.shape)
     te = iri_res[3].transpose()
     nalts = int((alt_range[1] - alt_range[0]) / alt_range[2]) + 1
     ne = ne.reshape((len(lats), -1))[:, :nalts]
