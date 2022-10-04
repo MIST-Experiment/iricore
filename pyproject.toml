@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iricore"
-version = "1.1.dev5"
+version = "1.1.0"
 description = ""
 authors = ["lap1dem <vadym.bidula@gmail.com>"]
 readme = "README.md"
@@ -18,5 +18,5 @@ cmake-build-extension = "^0.5.1"
 setuptools-cpp = "^0.1.0"
 
 [build-system]
-requires = ["poetry-core",  "wheel", "setuptools-cpp"]
+requires = ["cmake", "poetry-core",  "wheel", "setuptools-cpp"]
 build-backend = "poetry.core.masonry.api"
