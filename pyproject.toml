@@ -1,14 +1,17 @@
 [tool.poetry]
 name = "iricore"
-version = "1.1.1"
+version = "1.1.2"
 description = ""
 authors = ["lap1dem <vadym.bidula@gmail.com>"]
 readme = "README.md"
 build = "build.py"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-numpy = "^1.23.3"
+python = ">=3.7, <3.12"
+numpy = [
+    {version = "^1.21", python = "~3.7"},
+    {version = "^1.22", python = "^3.8"},
+]
 tqdm = "^4.64.1"
 matplotlib = "^3.6.0"
 cmake-build-extension = "^0.5.1"
