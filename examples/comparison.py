@@ -1,7 +1,7 @@
-# This script compares time of execution and results from the iricore and original iri2016 package. To run this script
-# you will need two additional packages - iri2016 and tqdm. You can install them with
-# >>> python -m pip install tqdm iri2016
-# During the first run the iri2016 will compile itself, which can take some time.
+# This script compares time of execution and results from the iricore and original iri2016_old package. To run this script
+# you will need two additional packages - iri2016_old and tqdm. You can install them with
+# >>> python -m pip install tqdm iri2016_old
+# During the first run the iri2016_old will compile itself, which can take some time.
 
 import iricore
 import iri2016

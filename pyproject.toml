@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iricore"
-version = "1.0.10"
+version = "1.1.dev5"
 description = ""
 authors = ["lap1dem <vadym.bidula@gmail.com>"]
 readme = "README.md"
@@ -11,11 +11,12 @@ python = "^3.8"
 numpy = "^1.23.3"
 tqdm = "^4.64.1"
 matplotlib = "^3.6.0"
+cmake-build-extension = "^0.5.1"
 
 
 [tool.poetry.group.dev.dependencies]
 setuptools-cpp = "^0.1.0"
 
 [build-system]
-requires = ["poetry-core",  "wheel", "setuptools_cpp"]
+requires = ["poetry-core",  "wheel", "setuptools-cpp"]
 build-backend = "poetry.core.masonry.api"

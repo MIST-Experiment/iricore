@@ -78,19 +78,20 @@ c
 
         call iri_tec (hbeg,hend,2,tec,tect,tecb)
 
-        end subroutine IRIT13
-
-
-        elemental real function ioncorr(tec,f)
+        return
+        end
+c
+c
+        real function ioncorr(tec,f)
 c-----------------------------------------------------------------------        
 c computes ionospheric correction IONCORR (in m) for given vertical
 c ionospheric electron content TEC (in m-2) and frequency f (in Hz)
-c----------------------------------------------------------------------- 
-        real, intent(in) :: tec, f       
+c-----------------------------------------------------------------------        
         ioncorr = 40.3 * tec / (f*f)
-        end function ioncorr
-
-
+        return
+        end
+c
+c
         subroutine iri_tec (hstart,hend,istep,tectot,tectop,tecbot)
 c-----------------------------------------------------------------------        
 C subroutine to compute the total ionospheric content
@@ -114,10 +115,6 @@ C       1       2.0km   1.0km   2.5km   10.0km  30.0km
 C       2       1.0km   0.5km   1.0km   1.0km   1.0km   
 C
 c-----------------------------------------------------------------------        
-        real, intent(in) :: hstart, hend
-        integer, intent(in) :: istep
-        real, intent(out) :: tectot, tectop, tecbot
-
 
         logical         expo
         dimension       step(5),hr(6)
@@ -305,5 +302,6 @@ C       hss = 360.
         tecbot = sumbot / zzz * 100.
         tectot = zzz * xnmf2
 
-      END subroutine iri_tec
+      RETURN
+      END
 

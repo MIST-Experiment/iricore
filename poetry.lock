@@ -1,4 +1,29 @@
 [[package]]
+name = "cmake"
+version = "3.24.1.1"
+description = "CMake is an open-source, cross-platform family of tools designed to build, test and package software"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+test = ["codecov (>=2.0.5)", "coverage (>=4.2)", "flake8 (>=3.0.4)", "path.py (>=11.5.0)", "pytest (>=3.0.3)", "pytest-cov (>=2.4.0)", "pytest-runner (>=2.9)", "pytest-virtualenv (>=1.7.0)", "scikit-build (>=0.10.0)", "setuptools (>=28.0.0)", "virtualenv (>=15.0.3)", "wheel"]
+
+[[package]]
+name = "cmake-build-extension"
+version = "0.5.1"
+description = "Setuptools extension to build and package CMake projects."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+cmake = "*"
+GitPython = "*"
+ninja = "*"
+setuptools-scm = "*"
+
+[[package]]
 name = "colorama"
 version = "0.4.5"
 description = "Cross-platform colored terminal text."
@@ -55,6 +80,28 @@ unicode = ["unicodedata2 (>=14.0.0)"]
 woff = ["brotli (>=1.0.1)", "brotlicffi (>=0.8.0)", "zopfli (>=0.1.4)"]
 
 [[package]]
+name = "gitdb"
+version = "4.0.9"
+description = "Git Object Database"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+smmap = ">=3.0.1,<6"
+
+[[package]]
+name = "GitPython"
+version = "3.1.27"
+description = "GitPython is a python library used to interact with Git repositories"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+gitdb = ">=4.0.1,<5"
+
+[[package]]
 name = "kiwisolver"
 version = "1.4.4"
 description = "A fast implementation of the Cassowary constraint solver"
@@ -81,6 +128,17 @@ pillow = ">=6.2.0"
 pyparsing = ">=2.2.1"
 python-dateutil = ">=2.7"
 setuptools_scm = ">=7"
+
+[[package]]
+name = "ninja"
+version = "1.10.2.4"
+description = "Ninja is a small build system with a focus on speed"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+test = ["codecov (>=2.0.5)", "coverage (>=4.2)", "flake8 (>=3.0.4)", "pytest (>=4.5.0)", "pytest-cov (>=2.7.1)", "pytest-runner (>=5.1)", "pytest-virtualenv (>=1.7.0)", "virtualenv (>=15.0.3)"]
 
 [[package]]
 name = "numpy"
@@ -198,6 +256,14 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
+name = "smmap"
+version = "5.0.0"
+description = "A pure Python implementation of a sliding window memory map manager"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -233,9 +299,31 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "adb8049fe934043127a1b8cbcd0bcfcaa7c8c72482df8819adfe381ad788f061"
+content-hash = "0a05c90279a4823608741383092d84de1c9153bfb38889ad5d766db866083e93"
 
 [metadata.files]
+cmake = [
+    {file = "cmake-3.24.1.1-py2.py3-none-macosx_10_10_universal2.macosx_10_10_x86_64.macosx_11_0_arm64.macosx_11_0_universal2.whl", hash = "sha256:5db44d09123d721785165918d5220c18c2fb8a4784b126922a208085bded627c"},
+    {file = "cmake-3.24.1.1-py2.py3-none-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:d212e0945753420e02bdfaa3ba411b45af7bddb77e0db6335ee71b5cbbca6cea"},
+    {file = "cmake-3.24.1.1-py2.py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:f4ebb3b09b19d9e244929c17367b7c899b68f871285e07fd72edd59cc819bd28"},
+    {file = "cmake-3.24.1.1-py2.py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c9eca895c87c2d41d5766eacb1ece57e1ae51887bfa5501cb43b15f1b8d427ec"},
+    {file = "cmake-3.24.1.1-py2.py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:2811de77fe8be5c14b6be395a6b9f60cd921ad84ca2491f92f6f5cce8570d7fb"},
+    {file = "cmake-3.24.1.1-py2.py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:70fe2f46f66c265874b26fb43b3332d707a60d1e0151d8f76dfe6487f5119198"},
+    {file = "cmake-3.24.1.1-py2.py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:4085aeaf85b462fee4f2f5e1b72e08136bfbc4f5c6241a521a1221d5f0a7eece"},
+    {file = "cmake-3.24.1.1-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cdff2c7fecbc122af8d75f3a2fb977f2bd361c2db3bd753b8ff817ec6eb217f1"},
+    {file = "cmake-3.24.1.1-py2.py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:1137407cb24c54c486184bde10aa74c50eb90604ee601c6c45e8c754112f236c"},
+    {file = "cmake-3.24.1.1-py2.py3-none-musllinux_1_1_i686.whl", hash = "sha256:36de1952e7ca22be42df591de192d0dbe1bf93f17e4a190dda9ecd4e6276e75d"},
+    {file = "cmake-3.24.1.1-py2.py3-none-musllinux_1_1_ppc64le.whl", hash = "sha256:fe0e398861aae4aee97f32ee0af02692b48f3685ac0d52fa463737090a667ce2"},
+    {file = "cmake-3.24.1.1-py2.py3-none-musllinux_1_1_s390x.whl", hash = "sha256:e7e9e737a14b9e6ac6ae5ad89c697aa9ba5e061564822f708a19dde3f9e382a4"},
+    {file = "cmake-3.24.1.1-py2.py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:5f02962ef635429f7552a002701f2589c6ce061c2f0157722e03b9b3fefa7215"},
+    {file = "cmake-3.24.1.1-py2.py3-none-win32.whl", hash = "sha256:6dce0562d6a7707d10f5c41f1d3adca1f1f2971bfbb3d24a780252cb81101497"},
+    {file = "cmake-3.24.1.1-py2.py3-none-win_amd64.whl", hash = "sha256:04e1a874476ef03a433d49715295e2b9583ff9fdb5b6f34572281e1b61e55b5f"},
+    {file = "cmake-3.24.1.1.tar.gz", hash = "sha256:7cccfc0388bfe4cb6a465fb8f8a57861c83c60956653b314cfde47865d94f03e"},
+]
+cmake-build-extension = [
+    {file = "cmake-build-extension-0.5.1.tar.gz", hash = "sha256:8206db07bf60ae1a51e555a15d474429c11aefd84d421324b3d723ac816fa81a"},
+    {file = "cmake_build_extension-0.5.1-py3-none-any.whl", hash = "sha256:96ba27de7cf2b722d4af638ac611ef8fcb3d79a46d04c6ca957e5c111ff07254"},
+]
 colorama = [
     {file = "colorama-0.4.5-py2.py3-none-any.whl", hash = "sha256:854bf444933e37f5824ae7bfc1e98d5bce2ebe4160d46b5edf346a89358e99da"},
     {file = "colorama-0.4.5.tar.gz", hash = "sha256:e6c6b4334fc50988a639d9b98aa429a0b57da6e17b9a44f0451f930b6967b7a4"},
@@ -318,6 +406,14 @@ cycler = [
 fonttools = [
     {file = "fonttools-4.37.4-py3-none-any.whl", hash = "sha256:afae1b39555f9c3f0ad1f0f1daf678e5ad157e38c8842ecb567951bf1a9b9fd7"},
     {file = "fonttools-4.37.4.zip", hash = "sha256:86918c150c6412798e15a0de6c3e0d061ddefddd00f97b4f7b43dfa867ad315e"},
+]
+gitdb = [
+    {file = "gitdb-4.0.9-py3-none-any.whl", hash = "sha256:8033ad4e853066ba6ca92050b9df2f89301b8fc8bf7e9324d412a63f8bf1a8fd"},
+    {file = "gitdb-4.0.9.tar.gz", hash = "sha256:bac2fd45c0a1c9cf619e63a90d62bdc63892ef92387424b855792a6cabe789aa"},
+]
+GitPython = [
+    {file = "GitPython-3.1.27-py3-none-any.whl", hash = "sha256:5b68b000463593e05ff2b261acff0ff0972df8ab1b70d3cdbd41b546c8b8fc3d"},
+    {file = "GitPython-3.1.27.tar.gz", hash = "sha256:1c885ce809e8ba2d88a29befeb385fcea06338d3640712b59ca623c220bb5704"},
 ]
 kiwisolver = [
     {file = "kiwisolver-1.4.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:2f5e60fabb7343a836360c4f0919b8cd0d6dbf08ad2ca6b9cf90bf0c76a3c4f6"},
@@ -431,6 +527,22 @@ matplotlib = [
     {file = "matplotlib-3.6.0-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4699bb671dbc4afdb544eb893e4deb8a34e294b7734733f65b4fd2787ba5fbc6"},
     {file = "matplotlib-3.6.0-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:657fb7712185f82211170ac4debae0800ed4f5992b8f7ebba2a9eabaf133a857"},
     {file = "matplotlib-3.6.0.tar.gz", hash = "sha256:c5108ebe67da60a9204497d8d403316228deb52b550388190c53a57394d41531"},
+]
+ninja = [
+    {file = "ninja-1.10.2.4-py2.py3-none-macosx_10_9_universal2.macosx_10_9_x86_64.macosx_11_0_arm64.macosx_11_0_universal2.whl", hash = "sha256:b0350784b37c5080223ec1bedc507153cc714b502c17dd5a64552e930b0dca25"},
+    {file = "ninja-1.10.2.4-py2.py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b86a4e4ba2ed999d8b10f2b3f2ed56d7457ff647268f4098dd0b63dd145ede32"},
+    {file = "ninja-1.10.2.4-py2.py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:b12cfed6382e510a597b3d08d7eec96664f7c8b8ee436eef645736c453d1c135"},
+    {file = "ninja-1.10.2.4-py2.py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:24e3bc4713667a9a1d15484ad2bb77bbaedb1e6d45254cb03f7964b8b497231a"},
+    {file = "ninja-1.10.2.4-py2.py3-none-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:3fa6e69838613815c80abcaca34681c5b7cf15bf921543e518f5c918d7098bb7"},
+    {file = "ninja-1.10.2.4-py2.py3-none-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:327c319176c5a4af21908b727b776e9f5caf275680403da632821ba071fd6296"},
+    {file = "ninja-1.10.2.4-py2.py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:251fb21cd6691accd0d95e28721ad8a50a6ec0ace97f9a8de3976f39301686f6"},
+    {file = "ninja-1.10.2.4-py2.py3-none-musllinux_1_1_i686.whl", hash = "sha256:685daebd1bc21480256351000a01dfb520636832fa65efc9f121474ff640e3df"},
+    {file = "ninja-1.10.2.4-py2.py3-none-musllinux_1_1_ppc64le.whl", hash = "sha256:34c8e44f6e2e35ff9444994bfc7bf451c8d4bf15e31ad1e3ef7b06f78647b35b"},
+    {file = "ninja-1.10.2.4-py2.py3-none-musllinux_1_1_s390x.whl", hash = "sha256:b264085e409533aecb57040c5e90fbfb64db91a61575c7e637411780446412fa"},
+    {file = "ninja-1.10.2.4-py2.py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:3300f3f37d62dcc7bdd19284dff9eaed7d629f4ed2725019a6ce3291c655fb83"},
+    {file = "ninja-1.10.2.4-py2.py3-none-win32.whl", hash = "sha256:5b973b1ce7075e9091db290adbbf93ba9066a94f97c369d0ff631251c633e81b"},
+    {file = "ninja-1.10.2.4-py2.py3-none-win_amd64.whl", hash = "sha256:ea245943a9849e5b1ebd74c1a4c1edd2c9801b62c0386165c7ac47623e353627"},
+    {file = "ninja-1.10.2.4.tar.gz", hash = "sha256:da7a6d9b2ed2018165fbf90068e2c64da08f2568c700fdb8abea07a245dc4664"},
 ]
 numpy = [
     {file = "numpy-1.23.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:c9f707b5bb73bf277d812ded9896f9512a43edff72712f31667d0a8c2f8e71ee"},
@@ -553,6 +665,10 @@ setuptools-scm = [
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
+]
+smmap = [
+    {file = "smmap-5.0.0-py3-none-any.whl", hash = "sha256:2aba19d6a040e78d8b09de5c57e96207b09ed71d8e55ce0959eeee6c8e190d94"},
+    {file = "smmap-5.0.0.tar.gz", hash = "sha256:c840e62059cd3be204b0c9c9f74be2c09d5648eddd4580d9314c3ecde0b30936"},
 ]
 tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
