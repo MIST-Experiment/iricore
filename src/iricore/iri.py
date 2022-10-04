@@ -35,7 +35,7 @@ IRI_VERSIONS = ['16', '20']
 
 
 def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], lons: Iterable[float],
-        replace_missing: float = np.nan, version=16) -> dict:
+        replace_missing: float = np.nan, version=20) -> dict:
     if version == 16:
         iricore = iri2016
     elif version == 20:
