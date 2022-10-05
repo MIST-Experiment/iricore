@@ -35,7 +35,7 @@ IRI_VERSIONS = ['16', '20']
 
 
 def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], lons: Iterable[float],
-        replace_missing: float = np.nan, version=20) -> dict:
+        replace_missing: float = np.nan, version=20, jf=None) -> dict:
     if version == 16:
         iricore = iri2016
     elif version == 20:
@@ -47,9 +47,9 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], l
 
     if not len(lats) == len(lons):
         raise ValueError("Lengths of latitude and longitude arrays must be equal.")
-
-    jf = np.ones(50, dtype=np.int32, order="F")
-    jf[[3, 4, 5, 11, 21, 22, 25, 27, 28, 29, 32, 33, 34, 35, 36]] = 0
+    if jf is None:
+        jf = np.ones(50, dtype=np.int32, order="F")
+        jf[[2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
     jmag = False
     iyyyy = c_int(dt.year)
     mmdd = c_int(100 * dt.month + dt.day)

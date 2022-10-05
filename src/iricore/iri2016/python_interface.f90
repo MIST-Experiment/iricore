@@ -21,7 +21,6 @@ subroutine iricore(jf, jmag, glat, glon, gsize, iyyyy, mmdd, dhour, heibeg, heie
   call readapf107
   NITER = SIZE(glat)
 
-
   do i = 1, NITER
       call IRI_SUB(jf, jmag, glat(i), glon(i), iyyyy, mmdd, dhour, heibeg, heiend, heistp, outf, oarr, datadir)
       do j = 1, 20
