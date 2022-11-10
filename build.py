@@ -7,6 +7,7 @@ ext_modules = [
     CMakeExtension("iricore", sourcedir="src/iricore"),
 ]
 
+
 def build(setup_kwargs: Dict[str, Any]) -> None:
     setup_kwargs.update(
         {
