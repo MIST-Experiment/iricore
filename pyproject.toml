@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iricore"
-version = "1.2.2"
+version = "1.2.3"
 description = ""
 authors = ["lap1dem <vadym.bidula@gmail.com>"]
 readme = "README.md"
@@ -8,7 +8,7 @@ build = "build.py"
 
 [tool.poetry.dependencies]
 python = ">=3.8, <4.0"
-numpy = "^1.23.5"
+numpy = "^1.22"
 fortranformat = "^1.2.2"
 
 

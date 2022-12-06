@@ -11,17 +11,13 @@ import numpy as np
 from numpy.ctypeslib import as_ctypes
 from .read_iri_data import readapf107
 
-import distutils.ccompiler
 
-_lib_ext = distutils.ccompiler.new_compiler().shared_lib_extension
 _iri_cfd = os.path.dirname(os.path.abspath(__file__))
 
 
 def _import_libs():
-    # iri2016 = np.ctypeslib.load_library("libiri2016", _iri_cfd)
-    # iri2020 = np.ctypeslib.load_library("libiri2020", _iri_cfd)
-    iri2016 = CDLL(os.path.join(_iri_cfd, "libiri2016"+_lib_ext))
-    iri2020 = CDLL(os.path.join(_iri_cfd, "libiri2020"+_lib_ext))
+    iri2016 = np.ctypeslib.load_library("libiri2016", _iri_cfd)
+    iri2020 = np.ctypeslib.load_library("libiri2020", _iri_cfd)
     return iri2016, iri2020
 
 
