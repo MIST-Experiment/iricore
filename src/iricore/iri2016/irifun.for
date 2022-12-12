@@ -8803,7 +8803,7 @@ c----------------------------------------------------------------
            character(256) :: datadir
 
            open(unit=12,file=trim(datadir)//'/index/'//'ig_rz.dat',
-     &          FORM='FORMATTED',status='old')
+     &          FORM='FORMATTED',status='old', READONLY)
 
 c-web- special for web version
 c            open(unit=12,file=
