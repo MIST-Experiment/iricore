@@ -41,9 +41,9 @@ except OSError:
 IRI_VERSIONS = ['16', '20']
 
 
-def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], lons: Iterable[float],
-        replace_missing: float = np.nan, version: int = 20, jf: np.ndarray | None = None, aap: np.ndarray | None = None,
-        af107: np.ndarray | None = None, nlines: int | None = None) -> dict:
+def _call_iri_sub(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], lons: Iterable[float],
+        jf: np.ndarray, version: int = 20, aap: np.ndarray | None = None,
+        af107: np.ndarray | None = None, nlines: int | None = None):
     if version == 16:
         iricore = iri2016
     elif version == 20:
@@ -55,10 +55,6 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], l
     lons = np.asarray(lons)
     if not len(lats) == len(lons):
         raise ValueError("Lengths of latitude and longitude arrays must be equal.")
-
-    if jf is None:
-        jf = np.ones(50, dtype=np.int32, order="F")
-        jf[[2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
 
     jmag = False
     iyyyy = c_int(dt.year)
@@ -87,13 +83,33 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], l
     # ==================================================================================================================
 
     iri_res = np.ascontiguousarray(iri_res)
-    ne = iri_res[0].transpose()
-    te = iri_res[3].transpose()
+    return iri_res
+
+
+def _extract_data(iri_res: np.ndarray, index: int, ncoord: int,  alt_range: [float, float, float],
+                  replace_missing: float = np.nan):
     nalts = int((alt_range[1] - alt_range[0]) / alt_range[2]) + 1
-    ne = ne.reshape((len(lats), -1))[:, :nalts]
-    te = te.reshape((len(lats), -1))[:, :nalts]
-    res = {
-        'ne': np.where(ne < 0, replace_missing, ne),
-        'te': np.where(te < 0, replace_missing, te),
-    }
-    return res
+    res = iri_res[index].transpose()
+    res = res.reshape((ncoord, -1))[:, :nalts]
+    return np.where(res < 0, replace_missing, res)
+
+
+def IRI(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], lons: Iterable[float],
+        replace_missing: float = np.nan, version: int = 20, aap: np.ndarray | None = None,
+        af107: np.ndarray | None = None, nlines: int | None = None) -> dict:
+    jf = np.ones(50, dtype=np.int32, order="F")
+    jf[[2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
+    iri_res = _call_iri_sub(dt, alt_range, lats, lons, jf, version, aap, af107, nlines)
+    ne = _extract_data(iri_res, 0, len(lats), alt_range, replace_missing)
+    te = _extract_data(iri_res, 3, len(lats), alt_range, replace_missing)
+    return {'ne': ne, 'te': te}
+
+
+def IRI_etemp_only(dt: datetime, alt_range: [float, float, float], lats: Iterable[float], lons: Iterable[float],
+        replace_missing: float = np.nan, version: int = 20, aap: np.ndarray | None = None,
+        af107: np.ndarray | None = None, nlines: int | None = None) -> dict:
+    jf = np.ones(50, dtype=np.int32, order="F")
+    jf[[0, 2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
+    iri_res = _call_iri_sub(dt, alt_range, lats, lons, jf, version, aap, af107, nlines)
+    te = _extract_data(iri_res, 3, len(lats), alt_range, replace_missing)
+    return {'te': te}
