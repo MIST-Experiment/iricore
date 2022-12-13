@@ -49,7 +49,7 @@ ccc104     FORMAT('/home/bilitza/tango_home/IRI_data/iri/',
 ccc     &     'iri_dev/IRTAM_dir/IRTAM_',A12,I8,'_',I4.4,'.ASC')
 104     FORMAT('IRTAM_',A12,I8,'_',I4.4,'.ASC')
         OPEN(IUCCIR,FILE=FILNAM,STATUS='OLD',ERR=201,
-     &          FORM='FORMATTED')
+     &          FORM='FORMATTED', action='read')
      	print*,mff,filnam
 
 C skip header with comments

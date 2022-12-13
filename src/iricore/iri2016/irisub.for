@@ -1233,7 +1233,7 @@ C
 c-web-for webversion
 c104     FORMAT('/var/www/omniweb/cgi/vitmo/IRI/ccir',I2,'.asc')
         OPEN(IUCCIR,FILE=trim(datadir1)//'/ccir/'//FILNAM,
-     &   STATUS='OLD',ERR=8448,FORM='FORMATTED')
+     &   STATUS='OLD',ERR=8448,FORM='FORMATTED', action='read')
         READ(IUCCIR,4689) F2,FM3
 4689    FORMAT(1X,4E15.8)
         CLOSE(IUCCIR)
@@ -1246,7 +1246,7 @@ C
 c-web-for webversion
 c1144    FORMAT('/var/www/omniweb/cgi/vitmo/IRI/ursi',I2,'.asc')
           OPEN(IUCCIR,FILE=trim(datadir1)//'/ursi/'//FILNAM,
-     &     STATUS='OLD',ERR=8448,FORM='FORMATTED')
+     &     STATUS='OLD',ERR=8448,FORM='FORMATTED', action='read')
           READ(IUCCIR,4689) F2
           CLOSE(IUCCIR)
         endif
@@ -1264,7 +1264,7 @@ c
 
         WRITE(FILNAM,104) NMONTH+10
         OPEN(IUCCIR,FILE=trim(datadir1)//'/ccir/'//FILNAM,
-     &   STATUS='OLD',ERR=8448,FORM='FORMATTED')
+     &   STATUS='OLD',ERR=8448,FORM='FORMATTED', action='read')
         READ(IUCCIR,4689) F2N,FM3N
         CLOSE(IUCCIR)
 
@@ -1274,7 +1274,7 @@ C
         if(URSIF2) then
           WRITE(FILNAM,1144) NMONTH+10
           OPEN(IUCCIR,FILE=trim(datadir1)//'/ursi/'//FILNAM,
-     &     STATUS='OLD',ERR=8448,FORM='FORMATTED')
+     &     STATUS='OLD',ERR=8448,FORM='FORMATTED', action='read')
           READ(IUCCIR,4689) F2N
           CLOSE(IUCCIR)
           endif

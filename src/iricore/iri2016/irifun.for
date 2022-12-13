@@ -5869,7 +5869,7 @@ c     .. local arrays ..
 c
       if (coeff_month_read(month) .eq. 0) then
         write(filedata, 10) month+10
-        open(10, File=filedata, status='old')
+        open(10, File=filedata, status='old', action='read')
 	  do j=0,47
 	    read(10,20) (coeff_month_all(i,j,month),i=0,148)
         end do
@@ -8986,7 +8986,7 @@ C
         character(256) :: datadir
 
         Open(13,FILE=trim(datadir)//'/index/'//'apf107.dat',
-     &       FORM='FORMATTED',STATUS='OLD')
+     &       FORM='FORMATTED',STATUS='OLD', action='read')
 c-web-sepcial vfor web version
 c      OPEN(13,FILE='/var/www/omniweb/cgi/vitmo/IRI/apf107.dat',
 c     *    FORM='FORMATTED',STATUS='OLD')
