@@ -1,13 +1,8 @@
 # iricore
-A fork of [iri2016](https://github.com/space-physics/iri2016). `iricore` implements a couple of optimizations to the `iri2016`
-core Fortran code and Python interface to make it faster:
-1. Optimization of data files reading gives boost in case of iteration over large list of coordinates;
-2. `f2py` interface provides faster communication between Python and Fortran.
-
-Overall, this gives performance boost up to ~100x (see `examples/comparison.py`).
+A Python interface to IRI-2016 and IRI-2020 using `ctypes` communication.
 
 **Important!** Because this package is mainly used for the [MIST experiment](http://www.physics.mcgill.ca/mist/), 
-the `iricore` cuts off calculation of unnecessary atmospheric parameters available in `iri2016`, leaving only electron density
+the `iricore` cuts off calculation of unnecessary atmospheric parameters available in IRI-2016, leaving only electron density
 and electron temperature. All other parameters can be restored on demand (please contact me).
 
 ## Installation
@@ -16,9 +11,9 @@ This package proved to work under Linux only (due to compilation difficulties in
 If you are using Windows - consider installing [WSL](https://docs.microsoft.com/en-us/windows/wsl/install).
 
 ### Prerequisites
-- Git
+- CMAKE
 ```
-sudo apt instal git
+sudo apt instal cmake
 ```
 
 - Fortran compiler, e.g. `gfortran`
