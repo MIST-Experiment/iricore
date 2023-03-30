@@ -18,6 +18,7 @@ tqdm = "^4.64.1"
 matplotlib = "^3.6.0"
 cmake-build-extension = "^0.5.1"
 pyqt5 = "^5.15.7"
+pymap3d = "^3.0.1"
 
 [build-system]
 requires = ["cmake", "poetry-core",  "wheel", "setuptools-cpp"]
