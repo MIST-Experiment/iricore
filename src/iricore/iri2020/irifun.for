@@ -735,7 +735,7 @@ C     model errTe
       E1400A=0.0
       E1400B=0.0
       E2000A=0.0
-      E2000B=0.0
+      E2000B=0.0                
       DO 50 I=1,81
        E350A=E350A+C(I)*DERRTE(1,SEZA,I)
        E350B=E350B+C(I)*DERRTE(1,SEZB,I)

@@ -231,7 +231,10 @@ C 2020.10 04/23/22 funct. ELTE changed to BOOKER1, COMMON/BLOTE del.
 C 2020.10 04/23/22 funct. TI changed to BOOKER1, COMMON/BLOCK8 del. 
 C 2020.10 04/29/22 ROCSAT ion drift model of Fejer et al., 2008 
 C 2020.10 04/29/22 --- Requires rocdrift.for file  
-C 2020.11 08/05/22 F00 cal is now for new FIRI-2018 (IRIDREG.FOR)   
+C 2020.11 08/05/22 F00 cal is now for new FIRI-2018 (IRIDREG.FOR)
+C 2020.12 09/28/22 COR2: exp merging from hmF2 to hcor2   
+C 2020.12 10/02/22 Changed fill value for vi to 9999 .... I. Girach 
+C 2020.12 10/02/22 Fill val: -99 for lat. var, sza, sundec, IG12 
 C
 C*****************************************************************
 C********* INTERNATIONAL REFERENCE IONOSPHERE (IRI). *************
@@ -499,7 +502,10 @@ c set switches for NRLMSIS00
         do 7397 kk=1,nummax
 7397    OUTF(KI,kk)=-1.
 C
-C oarr(1:6,10,15,16,33,35,39,41,46,89,90) are used for inputs
+C oarr(1:6,10,15,16,33,35,39,41,46,89,90) are used for inputs.
+C The fill value is -1 for most oarr output parameters. It is
+C -99 for all latitudinal variables, solar zenith angle, sun
+C declination and IG12. It is 9999 for ion drift.
 C 
         oarr(7)=-1.
         oarr(8)=-1.
@@ -508,14 +514,27 @@ C
 8398    	oarr(kind)=-1.
         do 8378 kind=17,22,1
 8378    	oarr(kind)=-1.
-c        oarr(34)=-1.
-c        do 8478 kind=36,38,1
-c8478    	oarr(kind)=-1.
-c        oarr(40)=-1.
-c        do 8428 kind=42,88,1
-c8428    	if(kind.ne.46) oarr(kind)=-1.
-        do 8429 kind=91,100,1
+        do 8478 kind=23,28,1
+8478    	oarr(kind)=-99.
+        do 8479 kind=29,32,1
+8479    	oarr(kind)=-1.
+        oarr(34)=-1.
+        oarr(36)=-1.
+        oarr(37)=-1.
+        oarr(38)=-1.
+        oarr(40)=-1.
+        oarr(42)=-1.
+        oarr(43)=-1.
+        oarr(44)=9999.
+        oarr(45)=-1.
+        do 8429 kind=45,57,1
 8429    	oarr(kind)=-1.
+        oarr(49)=-99.
+        oarr(53)=-99.
+        oarr(55)=-99.
+        do 8428 kind=58,82,1
+8428    	oarr(kind)=-99.
+        oarr(84)=-99.
 
 C
 C PROGRAM CONSTANTS AND INITIALIZATION
@@ -635,7 +654,7 @@ c
       IF(IGIN) THEN
           AIGIN=OARR(39)
       else
-          oarr(39)=-1.
+          oarr(39)=-99.
       ENDIF
 
       F107IN=(.not.jf(25))
@@ -974,14 +993,16 @@ c invdip_old for Te-TBT-2012
 c
 		invdip=-100.0
 		invdip_old=-100.0
-		if(jf(3).and.(.not.jf(6))) then
-       		call igrf_sub(lati,longi,ryear,600.0,fl,icode,dipl,babs)
+       	call igrf_sub(lati,longi,ryear,height,fl,icode,dipl,babs)
         	if(fl.gt.10.) fl=10.
+		if(jf(3).and.(.not.jf(6))) then
+c       	call igrf_sub(lati,longi,ryear,600.0,fl,icode,dipl,babs)
+c        	if(fl.gt.10.) fl=10.
       		invdip=INVDPC(FL,DIMO,BABS,DIPL)
 			endif
 		if((jf(2).and.(.not.jf(23))).or.(jf(2).and.jf(48))) then
-       		call igrf_sub(lati,longi,ryear,600.0,fl,icode,dipl,babs)
-        	if(fl.gt.10.) fl=10.
+c      		call igrf_sub(lati,longi,ryear,600.0,fl,icode,dipl,babs)
+c        	if(fl.gt.10.) fl=10.
       		invdip_old=INVDPC_OLD(FL,DIMO,BABS,DIPL)
 			endif
 
@@ -1024,6 +1045,7 @@ c
         	if(hour.gt.24.) hour=hour-24.
         endif
         CALL CLCMLT(IYEAR,DAYNR,HOURUT,LATI,LONGI,XMLT)
+c		print*,hour,xmlt
 c
 c SEASON assumes equal length seasons (92 days) with spring 
 c (SEASON=1) starting at day-of-year=45; for lati < 0 adjustment 
@@ -1523,6 +1545,8 @@ c
           hcor1 = hmF2 + x1
           x12 = 1500. - x1
 	      tc3 = r2 / x12
+		  hcor2 = (hcor1 + hmF2)/2.0
+		  shc = (hcor2-hmF2) / alog(2.0)
           endif
 c NEW-GUL--------------------------------
 c
@@ -2076,8 +2100,19 @@ C
 
         height=heibeg
         kk=1
+		xinv=0.0
 
 300   CALL SOCO(daynr,HOUR,LATI,LONGI,height,SUNDEC,XHI,SAX,SUX)
+c no longer calculating invdip for each height
+c       	call igrf_sub(lati,longi,ryear,height,fl,icode,dipl,babs)
+c        	if(fl.gt.10.) fl=10.
+c      		invdip=INVDPC(FL,DIMO,BABS,DIPL)
+c			yinv=invdip-xinv
+c      		invdip_old=INVDPC_OLD(FL,DIMO,BABS,DIPL)
+c           print 1204, height,invdip,yinv,invdip_old,mlat,fl
+c1204  Format(1x,F6.0,F9.2,F9.2,F9.2,F9.2,F9.2)
+c           if(height.eq.heibeg) xinv=invdip
+
 	  IF(NODEN) GOTO 330
 
 c
@@ -2094,7 +2129,7 @@ c
           endif
 
       tcor1=0.0
-      IF(itopn.eq.1.or.itopn.eq.3) then             
+       IF(itopn.eq.1.or.itopn.eq.3) then             
           IF(height.lt.hcor1) goto 2319
           xred = height - hcor1
           rco = tc3 * xred
@@ -2107,10 +2142,11 @@ c
       	  tcor2d=a01(1,1)+a01(2,1)*pf107
           tcor2n=a01(1,2)+a01(2,2)*pf107
           tcor2 = HPOL(HOUR,tcor2d,tcor2n,SAX300,SUX300,1.,1.)
+c		  tcor2=(exp((height-hmF2)/shc)-1)*tcor2
+		  if(height.lt.hcor2) tcor2=(exp((height-hmF2)/shc)-1)*tcor2
       	  endif	
-      	  				
-      tcor=tcor1+tcor2 
-         
+          tcor=tcor1+tcor2 
+        
       ELEDE=XE_1(HEIGHT)
       
 c

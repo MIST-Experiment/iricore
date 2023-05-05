@@ -742,7 +742,7 @@ c 667    FORMAT('/var/www/omniweb/cgi/vitmo/IRI/',A13)
 
         stop 74
 
-888    CLOSE(IU)
+888     CLOSE (IU)                                                                                                                                   
         RETURN                                                       
         END                                                          
 C
