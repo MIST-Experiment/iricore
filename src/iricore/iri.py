@@ -18,6 +18,7 @@ from .read_iri_data import readapf107
 
 _iri_cfd = os.path.dirname(os.path.abspath(__file__))
 
+IRI_DATA = readapf107(20)
 
 def _import_libs():
     iri2016 = np.ctypeslib.load_library("libiri2016", _iri_cfd)
@@ -44,8 +45,7 @@ except OSError:
 
 
 def _call_iri_sub(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], lons: Sequence[float],
-                  jf: np.ndarray, version: Literal[16, 20] = DEFAULT_VERSION, aap: np.ndarray | None = None,
-                  af107: np.ndarray | None = None, nlines: int | None = None):
+                  jf: np.ndarray, version: Literal[16, 20] = DEFAULT_VERSION):
     if version == 16:
         iricore = iri2016
     elif version == 20:
@@ -73,9 +73,7 @@ def _call_iri_sub(dt: datetime, alt_range: [float, float, float], lats: Sequence
 
     datadir = jpath(_iri_cfd, 'data/data' + str(version))
     datadir_bytes = bytes(datadir, 'utf-8')
-
-    if aap is None and af107 is None and nlines is None:
-        aap, af107, nlines = readapf107(version)
+    aap, af107, nlines = IRI_DATA
 
     # ==================================================================================================================
     iricore.iricore_(as_ctypes(jf), byref(c_bool(jmag)), glat, glon, byref(gsize), byref(iyyyy), byref(mmdd),
@@ -89,8 +87,7 @@ def _call_iri_sub(dt: datetime, alt_range: [float, float, float], lats: Sequence
 
 
 def _call_stec(dt: datetime, heights: Sequence[float], lat: Sequence[float], lon: Sequence[float],
-               jf: np.ndarray, version: Literal[16, 20] = DEFAULT_VERSION, aap: np.ndarray | None = None,
-               af107: np.ndarray | None = None, nlines: int | None = None):
+               jf: np.ndarray, version: Literal[16, 20] = DEFAULT_VERSION):
     if version == 16:
         iricore = iri2016
     elif version == 20:
@@ -114,8 +111,7 @@ def _call_stec(dt: datetime, heights: Sequence[float], lat: Sequence[float], lon
     datadir = jpath(_iri_cfd, 'data/data' + str(version))
     datadir_bytes = bytes(datadir, 'utf-8')
 
-    if aap is None and af107 is None and nlines is None:
-        aap, af107, nlines = readapf107(version)
+    aap, af107, nlines = IRI_DATA
 
     # ==================================================================================================================
     iricore.stec_(as_ctypes(jf), byref(c_bool(jmag)), f_lat, f_lon, f_heights, byref(hsize), byref(iyyyy), byref(mmdd),
@@ -137,29 +133,27 @@ def _extract_data(iri_res: np.ndarray, index: int, ncoord: int, alt_range: [floa
 
 
 def IRI(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], lons: Sequence[float],
-        replace_missing: float = np.nan, version: Literal[16, 20] = DEFAULT_VERSION, aap: np.ndarray | None = None,
-        af107: np.ndarray | None = None, nlines: int | None = None) -> dict:
+        replace_missing: float = np.nan, version: Literal[16, 20] = DEFAULT_VERSION) -> dict:
     jf = np.ones(50, dtype=np.int32, order="F")
     jf[[2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
-    iri_res = _call_iri_sub(dt, alt_range, lats, lons, jf, version, aap, af107, nlines)
+    iri_res = _call_iri_sub(dt, alt_range, lats, lons, jf, version)
     ne = _extract_data(iri_res, 0, len(lats), alt_range, replace_missing)
     te = _extract_data(iri_res, 3, len(lats), alt_range, replace_missing)
     return {'ne': ne, 'te': te}
 
 
 def IRI_etemp_only(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], lons: Sequence[float],
-                   replace_missing: float = np.nan, version: Literal[16, 20] = DEFAULT_VERSION, aap: np.ndarray | None = None,
-                   af107: np.ndarray | None = None, nlines: int | None = None) -> dict:
+                   replace_missing: float = np.nan, version: Literal[16, 20] = DEFAULT_VERSION) -> dict:
     jf = np.ones(50, dtype=np.int32, order="F")
     jf[[0, 2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
-    iri_res = _call_iri_sub(dt, alt_range, lats, lons, jf, version, aap, af107, nlines)
+    iri_res = _call_iri_sub(dt, alt_range, lats, lons, jf, version)
     te = _extract_data(iri_res, 3, len(lats), alt_range, replace_missing)
     return {'te': te}
 
 
 def stec(alt: float, az: float, dt: datetime, position: Sequence[float, float, float], hbot: float = 90,
          htop: float = 2000, npoints: int = 500,
-         version: Literal[16, 20] = DEFAULT_VERSION, iridata: Sequence = None, debug: bool = False) -> float | Sequence:
+         version: Literal[16, 20] = DEFAULT_VERSION, debug: bool = False) -> float | Sequence:
     """
     :param alt: altitude (elevation) of observation in [deg].
     :param az: azimuth of observation in [deg].
@@ -170,13 +164,9 @@ def stec(alt: float, az: float, dt: datetime, position: Sequence[float, float, f
     :param htop: Upper height limit for integration in [km].
     :param npoints: Number of points to integrate.
     :param version: IRI version number.
-    :param iridata: Pre-read IRI data with iricore.readapf107(). This can significantly
-                    reduce time for multiple calls.
     :param debug: If True - also returns IRI Ne output and Ne after post-processing.
     :return: Slant TEC.
     """
-    aap, af107, nlines = iridata or (None, None, None)
-
     # Calculating input parameters (assuming Earth=sphere)
     hstep = (htop - hbot) / npoints
     heights = np.linspace(hbot, htop, npoints)
@@ -187,7 +177,7 @@ def stec(alt: float, az: float, dt: datetime, position: Sequence[float, float, f
     # IRI call and data extraction
     jf = np.ones(50, dtype=np.int32, order="F")
     jf[[1, 2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
-    iri_res = _call_stec(dt, heights, slat, slon, jf, version, aap, af107, nlines)
+    iri_res = _call_stec(dt, heights, slat, slon, jf, version)
     ne = iri_res[0].transpose()
     ne = ne.reshape((len(heights), -1))[:, 0]
 
