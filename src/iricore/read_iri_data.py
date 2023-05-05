@@ -1,17 +1,14 @@
+from typing import Literal
+
 import numpy as np
 import fortranformat as ff
 import os
+from .config import DEFAULT_VERSION
 
 _iri_cfd = os.path.dirname(os.path.abspath(__file__))
 
-# def read_ig_iz(datadir: str):
-#     print(lines[0])
-#     # integer iyst, iyend, iymst, iupd, iupm, iupy, imst, imend
-#     aig = np.empty(806, order="F")
-#     arz = np.empty(806, order="F")
 
-
-def readapf107(version: int):
+def readapf107(version: Literal[16, 20] = DEFAULT_VERSION):
     datadir = os.path.join(_iri_cfd, f"data/data{version}")
     with open(os.path.join(datadir, "index/apf107.dat"), "r") as file:
         lines = file.readlines()

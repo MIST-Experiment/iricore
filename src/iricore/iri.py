@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import glob
 import os
+import warnings
 from ctypes import *
 from datetime import datetime
 from os.path import join as jpath
-from typing import Sequence
+from typing import Sequence, Literal
+from .config import IRI_VERSIONS, DEFAULT_VERSION
 
 import numpy as np
+import pymap3d as pm
 from numpy.ctypeslib import as_ctypes
 
+from .modules import srange, R_EARTH
 from .read_iri_data import readapf107
 
 _iri_cfd = os.path.dirname(os.path.abspath(__file__))
@@ -38,11 +42,9 @@ except OSError:
     except OSError:
         raise ImportError("Could not import IRI libraries. Please make sure you have installed the package correctly.")
 
-IRI_VERSIONS = ['16', '20']
-
 
 def _call_iri_sub(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], lons: Sequence[float],
-                  jf: np.ndarray, version: int = 20, aap: np.ndarray | None = None,
+                  jf: np.ndarray, version: Literal[16, 20] = DEFAULT_VERSION, aap: np.ndarray | None = None,
                   af107: np.ndarray | None = None, nlines: int | None = None):
     if version == 16:
         iricore = iri2016
@@ -87,7 +89,7 @@ def _call_iri_sub(dt: datetime, alt_range: [float, float, float], lats: Sequence
 
 
 def _call_stec(dt: datetime, heights: Sequence[float], lat: Sequence[float], lon: Sequence[float],
-               jf: np.ndarray, version: int = 16, aap: np.ndarray | None = None,
+               jf: np.ndarray, version: Literal[16, 20] = DEFAULT_VERSION, aap: np.ndarray | None = None,
                af107: np.ndarray | None = None, nlines: int | None = None):
     if version == 16:
         iricore = iri2016
@@ -135,7 +137,7 @@ def _extract_data(iri_res: np.ndarray, index: int, ncoord: int, alt_range: [floa
 
 
 def IRI(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], lons: Sequence[float],
-        replace_missing: float = np.nan, version: int = 20, aap: np.ndarray | None = None,
+        replace_missing: float = np.nan, version: Literal[16, 20] = DEFAULT_VERSION, aap: np.ndarray | None = None,
         af107: np.ndarray | None = None, nlines: int | None = None) -> dict:
     jf = np.ones(50, dtype=np.int32, order="F")
     jf[[2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
@@ -146,7 +148,7 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], l
 
 
 def IRI_etemp_only(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], lons: Sequence[float],
-                   replace_missing: float = np.nan, version: int = 20, aap: np.ndarray | None = None,
+                   replace_missing: float = np.nan, version: Literal[16, 20] = DEFAULT_VERSION, aap: np.ndarray | None = None,
                    af107: np.ndarray | None = None, nlines: int | None = None) -> dict:
     jf = np.ones(50, dtype=np.int32, order="F")
     jf[[0, 2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
@@ -155,12 +157,51 @@ def IRI_etemp_only(dt: datetime, alt_range: [float, float, float], lats: Sequenc
     return {'te': te}
 
 
-def STEC(dt: datetime, heights: Sequence[float], lats: Sequence[float], lons: Sequence[float],
-         version: int = 20, aap: np.ndarray | None = None,
-         af107: np.ndarray | None = None, nlines: int | None = None) -> np.ndarray:
+def stec(alt: float, az: float, dt: datetime, position: Sequence[float, float, float], hbot: float = 90,
+         htop: float = 2000, npoints: int = 500,
+         version: Literal[16, 20] = DEFAULT_VERSION, iridata: Sequence = None, debug: bool = False) -> float | Sequence:
+    """
+    :param alt: altitude (elevation) of observation in [deg].
+    :param az: azimuth of observation in [deg].
+    :param dt: time of observation.
+    :param position: sequence containing geographical latilude, longitude and altitude
+                     above sea level in [deg, deg, m].
+    :param hbot: Bottom height limit for integration in [km].
+    :param htop: Upper height limit for integration in [km].
+    :param npoints: Number of points to integrate.
+    :param version: IRI version number.
+    :param iridata: Pre-read IRI data with iricore.readapf107(). This can significantly
+                    reduce time for multiple calls.
+    :param debug: If True - also returns IRI Ne output and Ne after post-processing.
+    :return: Slant TEC.
+    """
+    aap, af107, nlines = iridata or (None, None, None)
+
+    # Calculating input parameters (assuming Earth=sphere)
+    hstep = (htop - hbot) / npoints
+    heights = np.linspace(hbot, htop, npoints)
+    rslant = srange(np.deg2rad(90 - alt), heights*1e3)
+    ell = pm.Ellipsoid(R_EARTH, R_EARTH)
+    slat, slon, _ = pm.aer2geodetic(az, alt, rslant, *position, ell=ell)
+
+    # IRI call and data extraction
     jf = np.ones(50, dtype=np.int32, order="F")
     jf[[1, 2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
-    iri_res = _call_stec(dt, heights, lats, lons, jf, version, aap, af107, nlines)
+    iri_res = _call_stec(dt, heights, slat, slon, jf, version, aap, af107, nlines)
     ne = iri_res[0].transpose()
     ne = ne.reshape((len(heights), -1))[:, 0]
-    return ne
+
+    # Data postprocessing (fixing non-physical IRI output)
+    ne_debug = ne.copy()
+    if np.any(np.isnan(ne)) or np.any(np.isinf(ne)):
+        warnings.warn("NANs or INFs found in the IRI output; setting them to 0.", stacklevel=2)
+    ne = np.where(np.isnan(ne), 0, ne)
+    ne = np.where(np.isinf(ne), 0, ne)
+    ne_ = ne - np.roll(ne, -1)
+    ne = np.where(ne_ > 1e3, np.roll(ne, 1), ne)
+    stec_res = np.sum(ne) * hstep * 1e3 * 1e-16
+    if stec_res < 0 or stec_res > 100:
+        warnings.warn("Unusual sTEC value found.", stacklevel=2)
+    if debug:
+        return [stec_res, ne_debug, ne]
+    return stec_res

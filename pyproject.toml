@@ -10,6 +10,7 @@ build = "build.py"
 python = ">=3.8, <4.0"
 numpy = "^1.22"
 fortranformat = "^1.2.2"
+pymap3d = "^3.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -19,6 +20,8 @@ matplotlib = "^3.6.0"
 cmake-build-extension = "^0.5.1"
 pyqt5 = "^5.15.7"
 pymap3d = "^3.0.1"
+pandas = "^2.0.1"
+astropy = "^5.2.2"
 
 [build-system]
 requires = ["cmake", "poetry-core",  "wheel", "setuptools-cpp"]
