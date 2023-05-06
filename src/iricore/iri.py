@@ -135,7 +135,7 @@ def _extract_data(iri_res: np.ndarray, index: int, ncoord: int, alt_range: [floa
 def IRI(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], lons: Sequence[float],
         replace_missing: float = np.nan, version: Literal[16, 20] = DEFAULT_VERSION) -> dict:
     jf = np.ones(50, dtype=np.int32, order="F")
-    jf[[2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
+    jf[[2, 3, 4, 5, 11, 20, 21, 22, 23, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
     iri_res = _call_iri_sub(dt, alt_range, lats, lons, jf, version)
     ne = _extract_data(iri_res, 0, len(lats), alt_range, replace_missing)
     te = _extract_data(iri_res, 3, len(lats), alt_range, replace_missing)
@@ -145,7 +145,7 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], l
 def IRI_etemp_only(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], lons: Sequence[float],
                    replace_missing: float = np.nan, version: Literal[16, 20] = DEFAULT_VERSION) -> dict:
     jf = np.ones(50, dtype=np.int32, order="F")
-    jf[[0, 2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
+    jf[[0, 2, 3, 4, 5, 11, 20, 21, 22, 23, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
     iri_res = _call_iri_sub(dt, alt_range, lats, lons, jf, version)
     te = _extract_data(iri_res, 3, len(lats), alt_range, replace_missing)
     return {'te': te}
@@ -176,7 +176,7 @@ def stec(alt: float, az: float, dt: datetime, position: Sequence[float, float, f
 
     # IRI call and data extraction
     jf = np.ones(50, dtype=np.int32, order="F")
-    jf[[1, 2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
+    jf[[1, 2, 3, 4, 5, 11, 20, 21, 22, 23, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
     iri_res = _call_stec(dt, heights, slat, slon, jf, version)
     ne = iri_res[0].transpose()
     ne = ne.reshape((len(heights), -1))[:, 0]
