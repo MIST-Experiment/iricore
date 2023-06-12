@@ -5849,7 +5849,7 @@ c
 c
       subroutine read_data_SD(month,coeff_month)
 c------------------------------------------------------------------
-c    subroutine to read arrays mcsat11.datÖ mcsat22.dat
+c    subroutine to read arrays mcsat11.dat mcsat22.dat
 c    with coefficients of hmF2 spatial decomposition
 c    for for 12 month, 24 UT hour and two solar activity levels
 c------------------------------------------------------------------
@@ -5861,15 +5861,20 @@ c     .. array arguments ..
 c     .. local scalars ..
 	integer coeff_month_read(1:12)
 	character(256) filedata
+	character(512) filedatapath
 	integer i, j
 c     .. local arrays ..
 	double precision coeff_month_all(0:148,0:47,1:12)
 	save coeff_month_all
 	data coeff_month_read /12*0/
+
+           common/folders/datadir
+           character(256) :: datadir
 c
       if (coeff_month_read(month) .eq. 0) then
         write(filedata, 10) month+10
-        open(10, File=filedata, status='old', action='read')
+        filedatapath = trim(datadir)//'/mcsat/'//trim(filedata)
+        open(10, File=filedatapath, status='old', action='read')
 	  do j=0,47
 	    read(10,20) (coeff_month_all(i,j,month),i=0,148)
         end do
