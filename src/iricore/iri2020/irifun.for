@@ -13,12 +13,12 @@ c
 c     COMMON/iounit/konsol,mess is used to pass the value of KONSOL from 
 c     IRISUB to IRIFUN and IGRF. If mess=false then messages are turned off.
 c
-c  UNIT=10 read_data_SD: coefficients of Shubin (2015) hmF2 model  
 c  UNIT=12 TCON: Solar/ionospheric indices IG12, R12 (IG_RZ.DAT) 
 c  UNIT=13 APF,APFMSIS,APF_ONLY: Magnetic indices and F10.7 (APF107.DAT) 
+c  UNIT=15 read_data_SD: coefficients of Shubin (2015) hmF2 model  
 c
 c I/o Units used in other programs:
-c  IUCCIR=10 in IRISUB for CCIR and URSI coefficients (CCIR%%.ASC, %%=month+10)
+c  UNIT=10 in IRISUB for CCIR and URSI coefficients (CCIR%%.ASC, %%=month+10)
 c  UNIT=14 in IGRF/GETSHC for IGRF coeff. (DGRF%%%%.DAT, %%%%=year)
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c changes from IRIFU9 to IRIF10:
@@ -167,9 +167,13 @@ C 2020.10 04/20/22 IONTIF: del. INVDIP calc., output for fixed heights
 C 2020.10 04/21/22 ELTEIK: del. INVDIP calc., output for fixed heights
 C 2020.10 04/23/22 ELTE -> BOOKER1, COMMON/BLOTE deleted
 C 2020.10 04/23/22 TI -> BOOKER1, COMMON/BLOCK8 deleted
+C 2020.11 11/25/22 Changed unit to 15 for Shubin coefficients
+C 2020.11 11/28/22 Added gallden, ohzden, caaden, caadenet, tcor2cal
+C 2020.11 11/28/22 Improved XE1: argmax, COMMON
 C                  
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c IRI functions and subroutines:
+C Ne plasmasphere: gallden, ohzden, caaden, tcor2cal
 C Ne:       XE1,TOPQ,ZERO,DXE1N,XE2,XE3_1,XE4_1,XE5,XE6,XE_1
 C Te:   	ELTEIK,INTERP,KODERR,KOEFD,KOF107,LOCATE,SPHARM_IK, 
 C		    SPLINE,SPLINT,SWAPEL,TEDIFI,TPCAS,TPCORR},TEBA,SPHARM,
@@ -200,33 +204,134 @@ C*************************************************************
 C*************** ELECTRON DENSITY ****************************   
 C*************************************************************   
 C
-
+c
+       REAL FUNCTION GALLDEN(XL,IDOY,R12)
+C--------------------------------------------------------------
+C Plasmasphere model of Gallager et al. (2000) up to plasmapause
+C   INPUT:  XL       L-value
+C           IDOY     day of year
+C           R12      12-months running mean of sunspot number
+C   OUTPUT: GALLDEN  electron density in m-3   
+C--------------------------------------------------------------
+       COMMON /const1/humr,dumr
+         y1=-0.79*xl + 5.3
+         y2=dumr*(idoy+9)
+         y5=0.15*(cos(y2)-0.5*cos(2*y2))
+         y6=y5+0.00127*R12-0.0635
+         y7=y6*exp(-(xl-2)/1.5)
+         xlogNe=y1+y7
+		 if(abs(xlogNe).gt.38.0) xlogNe=sign(38.0,xlogNe)
+         gallden=10**(log10Ne+6.0)
+       RETURN          
+       END             
+C
+C
+      REAL FUNCTION CAADENET(XL,XMLT)
+C--------------------------------------------------------------
+C Plasmasphere model of Carpenter & Anderson (1992) for 
+C extended plasma trough
+C   INPUT:  XL       L-value
+C           XMLT     magnetic local time in hours
+C   OUTPUT: CAADENET  electron density in m-3   
+C--------------------------------------------------------------
+         y1=5800+300*xmlt
+         if(xmlt.ge.6.0.and.xmlt.le.15.0) y1=-800+1400*xmlt
+         y2=y1/xl**4.5
+         y3=1.0-exp(-(xl-2.0)/10.0)
+         caadenet=(y2+y3)*1.E6
+       RETURN          
+       END             
+C
+C
+      REAL FUNCTION CAADEN(XL,IDOY,R12)
+C--------------------------------------------------------------
+C Plasmasphere model of Carpenter & Anderson (1992) up to 
+C plasmapause
+C   INPUT:  XL       L-value
+C           IDOY     day of year
+C           R12      12-months running mean of sunspot number
+C   OUTPUT: CAADEN  electron density in m-3   
+C--------------------------------------------------------------
+       COMMON /const1/humr,dumr
+         y1=-0.3145*xl + 3.9043
+         y2=dumr*(idoy+9)
+         y5=0.15*(cos(y2)-0.5*cos(2*y2))
+         y6=y5+0.00127*R12-0.0635
+         y7=y6*exp(-(xl-2)/1.5)
+         xlogNe=y1+y7
+		 if(abs(xlogNe).gt.38.0) xlogNe=sign(38.0,xlogNe)
+         caaden=10**(log10Ne+6.0)
+       RETURN          
+       END             
+C
+C
+      REAL FUNCTION OHZDEN(XL,XMLAT)
+C--------------------------------------------------------------
+C Plasmasphere model of Ozhogin et al. (2012) up to plasmapause
+C   INPUT:  XL       L-value
+C           XMLAT    magnetic latitude
+C   OUTPUT: OHZDEN  electron density in m-3   
+C--------------------------------------------------------------
+       COMMON /CONST/UMR,PI
+         y1=4.4693-0.4903*xl
+		 if(abs(y1).gt.38.0) y1=sign(38.0,y1)
+         xneq=10**y1
+         xinv=acos(sqrt(1.0/xl))/umr
+         y2=1.01*xmlat/xinv
+         y3=cos(pi*y2/2.0)
+         y4=y3**(-0.75)
+         ohzden=1.0E6*xneq*y4
+       RETURN          
+       END             
+C
+C
+      REAL FUNCTION TCOR2CAL(h,hmF2,hour,xmodip,pf107,srh,ssh)
+C--------------------------------------------------------------
+C Calculates correction factor TCOR2
+C    INPUT:  h   height in km
+C            hmF2	F2 peak height in km
+C            hour	Local time in hours
+C            xmodip	modified dip latitude in degree
+C            pf107	PF10.7 index
+C            srh    Sunrise at height h in hours
+C            ssh    Sunrset at height h in hours
+C--------------------------------------------------------------
+        DIMENSION a01(2,2)
+		COMMON /BLO15/hcor2,scahei
+		call tops_cor2(h,xmodip,a01)
+      	  tc2d=a01(1,1)+a01(2,1)*pf107
+          tc2n=a01(1,2)+a01(2,2)*pf107
+          tc2 = HPOL(HOUR,tc2d,tc2n,SAX300,SUX300,1.,1.)
+		  if(h.lt.hcor2) tc2=(exp((h-hmF2)/scahei)-1)*tc2
+		  TCOR2CAL = tc2
+       RETURN          
+       END             
+		  
+C
+C
         FUNCTION XE1(H)    
 c----------------------------------------------------------------
-C DETERMINING ELECTRON DENSITY(M-3) IN THE TOPSIDE IONOSPHERE   
-C (H=HMF2....2000 KM) BY HARMONIZED BENT-MODEL ADMITTING 
+C DETERMINES ELECTRON DENSITY(M-3) IN THE TOPSIDE IONOSPHERE   
+C (hmF2-2000 KM) BY HARMONIZED BENT-MODEL ADMITTING 
 C VARIABILITY OF THE GLOBAL PARAMETERS BETA,ETA,DELTA,ZETA WITH        
 C GEOM. LATITUDE, SMOOTHED SOLAR FLUX AND CRITICAL FREQUENCY.     
 C BETA,ETA,DELTA,ZETA are computed in IRISUB program and 
 C communicated via COMMON /BLO10. This is the IRI-2001 approach
-C [REF.:K.RAWER,S.RAMAKRISHNAN,1978] 
+C (itopn=0) [REF.:K.RAWER,S.RAMAKRISHNAN,1978] 
 C New options include:
-C (1) IRI-corrected: TC3,alg10,hcor1 in COMMON /BLO11. 
-C   TC3     correction term divided by (1500-(hcor1-hmF2))
-C   alg10   = alog(10.)
-C	hcor1	lower height boundary for correction
-C (2) NeQuick:  B2TOP  in COMMON /BLO11.
-C	B2TOP   is the topside scale height that depends on foF2 and 
-C           hmF2. 
-C Switch for choosing the desired option is itopn in COMMON /BLO11
-C   itopn   =0 IRI-2001, =1 IRI-2001-corrected, =2 NeQuick
-C           =3 IRI-cor2. 
+C (itopn=1) IRI2001cor: itopn,tcor1 in COMMON /BLO11.
+C     TCOR1 is a correction factor for IRI-2001 that depends  
+C           on height and modip 
+C (itopn=2) NeQuick:  B2TOP,itopn  in COMMON /BLO11.
+C	  B2TOP is the topside scale height that depends on foF2  
+C           and hmF2. 
+C (itopn=3) IRI-cor2: tcor2 in COMMON /BLO11.
+C     TCOR2 is a correction factor for IRI-2001 that depends  
+C           on height, LT, modip and PF10.7 
 c----------------------------------------------------------------
         COMMON  /BLOCK1/HMF2,XNMF2,HMF1,F1REG
      &          /BLO10/BETA,ETA,DELTA,ZETA
-c     &          /BLO11/B2TOP,TC3,itopn,alg10,hcor1,tcor2
-     &          /BLO11/B2TOP,itopn,tcor
-c     &          /QTOP/Y05,H05TOP,QF,XNETOP,xm3000,hhalf,tau
+     &          /BLO11/B2TOP,itopn,tcor1,tcor2
      &          /ARGEXP/ARGMAX
 
         logical 	f1reg              
@@ -241,25 +346,12 @@ c     &          /QTOP/Y05,H05TOP,QF,XNETOP,xm3000,hhalf,tau
         xmx0 = (H-HMF2)/DXDH
         x = xmx0 + x0
         eptr1 = eptr(x,beta,394.5) - eptr(x0,beta,394.5)
-        eptr2 = eptr(x,100.,300.0) - eptr(x0,100.,300.0) 
+        eptr2 = eptr(x,100.,300.0) - eptr(x0,100.,300.0)
         y = BETA * ETA * eptr1 + ZETA * (100. * eptr2 - xmx0)
         Y = y * dxdh
-        if(abs(Y).gt.argmax) Y = sign(argmax,Y)
-
-c        IF(itopn.eq.3) then
-c	         IF((QF.EQ.1.).AND.(ABS(H-H05TOP).LT.1.)) QF=Y05/Y
-c             XE1 = XNMF2 * EXP(-Y*QF)                             
-c             RETURN          
-c             endif
-c        TCORS = 0.0
-c        IF(itopn.eq.1.or.itopn.eq.3) then             
-c             xred = h - hcor1
-c             rco = tc3 * xred
-c             TCOR = rco * alg10
-c             endif
-c        IF(h.gt.hcor1) TCORS=TCORS+TCOR
-c        TCOR=TCOR+TCOR2
-        XE1 = XNMF2 * EXP(-Y+TCOR)                             
+		YC = -Y+TCOR1+TCOR2
+        if(abs(YC).gt.argmax) YC = sign(argmax,YC)
+        XE1 = XNMF2 * EXP(YC)                             
         RETURN          
         END             
 C
@@ -269,8 +361,8 @@ C-------------------------------------------------------------------------
 C Determines solar activity correction factor for topside cor option:
 C		xh	height in km
 C		vmod	modified dip latitude in degree
-C		ap01(1:2,1)		A0 and A1 for daytime
-C		ap01(1:2,2)		A0 and A1 for nighttime
+C		a01(1:2,1)		A0 and A1 for daytime
+C		a01(1:2,2)		A0 and A1 for nighttime
 C	        IRI-new = IRI-old * exp(A0+A1*PF10.7)
 C-------------------------------------------------------------------------
       REAL	pa(6,3,2,2),ha(6,3,2,2),sh(5),thh(4)
@@ -7358,8 +7450,7 @@ c     ..
 	   call SDMF2(UT,montha,F107_81,xmodip,long,hmF2_p)
          hmF2med  = (hmF2_0+(day-15)*(hmF2_p-hmF2_0)/30.)
       end if
-
-	hmF2 = hmF2med
+      hmF2 = hmF2med
       return
       end
 C
@@ -7499,7 +7590,7 @@ c
 c------------------------------------------------------------------
 c    subroutine to read arrays mcsat11.datÖ mcsat22.dat
 c    with coefficients of hmF2 spatial decomposition
-c    for for 12 month, 24 UT hour and two solar activity levels
+c    for 12 month, 24 UT hour and two solar activity levels
 c------------------------------------------------------------------
 	implicit none
 c     .. scalar arguments ..
@@ -7537,9 +7628,11 @@ c
 c      do i=0,148
 c	   do j=0,47 
 c	      coeff_month(i,j) = coeff_month_all(i,j,month)
-c        end do
-c	end do	   
+c       end do
+c	  end do	   
 c
+c		print*,coeff_month_read(4),coeff_month(0,0),
+c     &        coeff_month(148,1)
 	  return
 	
  10   format('mcsat',i2,'.dat')
@@ -7602,7 +7695,6 @@ c	.. local arrays ..
 c	.. local in common ..
 	double precision umr
 	common/constt/umr
-c	common/const/umr,pi
 c     .. subroutine references ..
 c     Legendre
 c
@@ -7656,7 +7748,6 @@ c     .. local scalars ..
 c	.. local in common ..
 	  double precision umr
 	  common/constt/umr
-c	  common/const/umr,pi
 c
       p = 0.0
 	  z=cos(umr*teta)
@@ -7723,7 +7814,6 @@ c   .. local arrays ..
 c	.. local in common ..	
 	  double precision dtr
 	  common/radUT/dtr
-c	  common/const1/dtr,dumr
 c   .. subroutine references ..
 c     Koeff_UT, fun_Gk_UT
 c
@@ -7880,7 +7970,6 @@ c	.. local scalars ..
 c	.. local in common ..
 	  double precision dtr
 	  common/radUT/dtr
-c	  common/const1/dtr, dumr
 c
 	  Gk_UT = 0.d0
         k = 0

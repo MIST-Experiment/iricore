@@ -45,10 +45,10 @@ c  IUCCIR=10 IRISUB: CCIR and URSI coefficients (CCIR%%.ASC, %%=month+10)
 c  KONSOL=11 IRISUB: Program messages (used when jf(12)=.false. -> MESSAGES.TXT)
 c  KONSOL=6/11 is also used in IRIFUN and IGRF. COMMON/iounit/konsol,mess 
 c    is used to pass the value of KONSOL. If mess=false messages are turned off.
-c  UNIT=10 read_data_SD: coefficients of Shubin (2015) hmF2 model  
 c  UNIT=12 IRIFUN/TCON:  Solar/ionospheric indices IG12, R12 (IG_RZ.DAT) 
 c  UNIT=13 IRIFUN/APF..: Magnetic indices and F10.7 (APF107.DAT 
 c  UNIT=14 IGRF/GETSHC:  IGRF coeff. (DGRF%%%%.DAT or IGRF%%%%.DAT, %%%%=year)
+c  UNIT=15 IRIFUN/read_data_SD: coefficients of Shubin (2015) hmF2 model  
 c
 c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 C
@@ -137,12 +137,12 @@ C 2007.11 04/19/10 Corrections in irifun.for, cira.for
 C 2007.12 11/23/10 FNIGHT computed twice at 8334 --------- C. Vasly 
 C
 C 2012.00 10/05/11 IRI-2012: bottomside B0 B1 model (SHAMDB0D, SHAB1D),
-C 2012.00 10/05/11  bottomside Ni model (iriflip.for), auroral foE
-C 2012.00 10/05/11  storm model (storme_ap), Te with PF10.7 (elteik),
-C 2012.00 10/05/11  oval kp model (auroral_boundary),IGRF-11(igrf.for), 
-C 2012.00 10/05/11  NRLMSIS00 (cira.for), CGM coordinates, F10.7 daily
-C 2012.00 10/05/11  81-day 365-day indices (apf107.dat), ap->kp (ckp),
-C 2012.00 10/05/11  array size change jf(50) outf(20,1000), oarr(100).
+C 2012.00 10/05/11 bottomside Ni model (iriflip.for), auroral foE
+C 2012.00 10/05/11 storm model (storme_ap), Te with PF10.7 (elteik),
+C 2012.00 10/05/11 oval kp model (auroral_boundary),IGRF-11(igrf.for), 
+C 2012.00 10/05/11 NRLMSIS00 (cira.for), CGM coordinates, F10.7 daily
+C 2012.00 10/05/11 81-day 365-day indices (apf107.dat), ap->kp (ckp),
+C 2012.00 10/05/11 array size change jf(50) outf(20,1000), oarr(100).
 C 2012.01 11/01/11 delete TEDER from EXTERNAL; GTD7 call 0 to 0.0
 C 2012.01 12/12/11 put FMODIP in EXTERNAL; cgn_lon -> cgm_lon
 C 2012.01 01/24/12 Change FLAT to LATI in SHAB1D call [D. Altadill]
@@ -235,6 +235,16 @@ C 2020.11 08/05/22 F00 cal is now for new FIRI-2018 (IRIDREG.FOR)
 C 2020.12 09/28/22 COR2: exp merging from hmF2 to hcor2   
 C 2020.12 10/02/22 Changed fill value for vi to 9999 .... I. Girach 
 C 2020.12 10/02/22 Fill val: -99 for lat. var, sza, sundec, IG12 
+C 2020.13 11/28/22 Addded plasmasphere for IRI2001cor and COR2
+C 2020.13 11/28/22 outf(15,*)= ratio plasma to gyro frequency
+C 2020.14 02/07/23 Init. D_MSIS(1)=0 for GTD7(cira.for). M. Hausman 
+C 2020.14 02/07/23 Ni: RBTT needs IAPO,TEH,TIH jf(2)!... M. Hausman 
+C 2020.14 02/07/23 elteik,iontif calls: invdip_old at 600km
+C 2020.14 02/07/23 calion call: invdip at height
+C 2020.15 02/19/23 plasmapause fixed at L=5
+C 2020.16 03/18/23 vfjmodelrocstart: array fjm specified 
+C 2020.17 03/23/23 replacing subroutine iri_tec with IRITEC
+C 2020.18 04/27/23 w/o plasmapause (fixpt:5000,10000,20000,30000km)
 C
 C*****************************************************************
 C********* INTERNATIONAL REFERENCE IONOSPHERE (IRI). *************
@@ -303,16 +313,17 @@ C   36    hmF2 w/out foF2_storm  with foF2-storm                     t
 C   37    topside w/out foF2-storm  with foF2-storm                  t
 C   38    turn WRITEs off in IRIFLIP   turn WRITEs on                t
 C   39    hmF2 (M3000F2)         new models                      false
-C   40    hmF2 AMTB-model        Shubin-COSMIC model                 t
+C   40    hmF2 AMTB-model        Shubin-COSMIC model             false
 C (39,40) = (t,t) hmF2-old, (f,t) AMTB, (f,f) Shubin, (t,f) not used
 C   41    Use COV=F10.7_365      COV=f(IG12) (IRI before Oct 2015)   t
 C   42    Te with PF10.7 dep.	 w/o PF10.7 dependance               t
 C   43    B0 from model          B0 user input in OARR(10)           t
 C   44    B1 from model          B1 user input in OARR(35)           t
-C   45    HNEA=65/80km dya/night HNEA user input in OARR(89)         t
-C   46    HNEE=2000km 	         HNEE user input in OARR(90)         t
+C   45    not used
+C   46    not used
 C   47    CGM computation on 	 CGM computation off             false
 C   48    Ti  Tru-2021           Bil-1981                            t
+C   49    Plasmasphere: Ozhogin  Gallagher model                     t
 C      ....
 C   50    
 C   ------------------------------------------------------------------
@@ -337,8 +348,6 @@ C    jf(27) =.false.     OARR(39)=user input for IG12
 C    jf(32) =.false.     OARR(46)=user input for 81-day avg F10.7
 C    jf(43) =.false.     OARR(10)=user input for B0
 C    jf(44) =.false.     OARR(35)=user input for B1
-C    jf(45) =.false.     OARR(89)=user input for HNEA (Ne lower boundary)
-C    jf(46) =.false.     OARR(90)=user input for HNEE (Ne upper boundary)
 C
 C
 C  OUTPUT:  OUTF(1:20,1:1000)
@@ -363,7 +372,8 @@ C                      34:44) for minor Stratospheric Warming (SW=0.5)
 C                      45:55) for major Stratospheric Warming (SW=1) 
 C                      56:66) weak Winter Anomaly (WA=0.5) conditions
 C                      67:77) strong Winter Anomaly (WA=1) conditions
-C               OUTF(15-20,*)  free
+C               OUTF(15,*) plasma frequency divided by gyro frquency
+C               OUTF(16-20,*)  free
 c
 C            OARR(1:100)   ADDITIONAL OUTPUT PARAMETERS         
 C
@@ -412,7 +422,7 @@ C       OARR(81) = CGM-lati(MLT=22)   OARR(82) = CGM-lati for MLT=23
 C       OARR(83) = Kp at current time OARR(84) = magnetic declination 
 C       OARR(85) = L-value            OARR(86) = dipole moment 
 C       OARR(87) = SAX300             OARR(88) = SUX300 
-C      #OARR(89) = HNEA              #OARR(90) = HNEE 
+C       OARR(89) = HNEA               OARR(90) = HNEE 
 C                # INPUT as well as OUTPUT parameter
 C                $ special for IRIWeb (only place-holders)
 C		for more details got to end of subroutine
@@ -457,7 +467,9 @@ c      CHARACTER FILNAM*53
      &  STTE(6),DTE(5),ATE(7),TEA(4),XNAR(2),param(2),OARR(100),
      &  OUTF(20,1000),DION(7),osfbr(25),D_MSIS(9),T_MSIS(2),
      &  IAPO(7),SWMI(25),ab_mlat(48),DAT(11,4),PLA(4),PLO(4),
-     &  a01(2,2),teva(5),sdteva(5),tiv(4),sigtv(4),FJM(59,25,4,11)
+     &  a01(2,2),teva(5),sdteva(5),tiv(4),sigtv(4),FM(59,25,4,11)
+
+	  DIMENSION palogne(6),dplas(4),pah(6),iap(13),fjm(59,25,4,11)
 
       LOGICAL  EXT,SCHALT,TECON(2),sam_mon,sam_yea,sam_ut,sam_date,
      &  F1REG,FOF2IN,HMF2IN,URSIF2,LAYVER,RBTT,DREG,rzino,FOF1IN,
@@ -468,19 +480,19 @@ c      CHARACTER FILNAM*53
      &  sam_moye
 
       COMMON /CONST/UMR,PI  /const1/humr,dumr   /ARGEXP/ARGMAX
-     &   /IGRF1/ERA,AQUAD,BQUAD,DIMO
-     &   /BLOCK1/HMF2,NMF2S,HMF1,F1REG  /BLOCK2/B0,B1,C1  
-     &   /BLOCK3/HZ,T,HST              /BLOCK4/HME,NMES,HEF 
-     &   /BLOCK5/ENIGHT,E              /BLOCK6/HMD,NMD,HDX
-     &   /BLOCK7/D1,XKK,FP30,FP3U,FP1,FP2
-     &   /BLO10/BETA,ETA,DELTA,ZETA    /findRLAT/FLON,RYEAR   
-     &   /BLO11/B2TOP,itopn,tcor       
+     &   /IGRF1/ERA,AQUAD,BQUAD,DIMO	/BLOCK2/B0,B1,C1
+     &   /BLOCK1/HMF2,NMF2S,HMF1,F1REG	/BLOCK3/HZ,T,HST   
+     &   /BLOCK4/HME,NMES,HEF	/BLOCK5/ENIGHT,E
+     &   /BLOCK6/HMD,NMD,HDX	/BLOCK7/D1,XKK,FP30,FP3U,FP1,FP2
+     & /BLO10/BETA,ETA,DELTA,ZETA /BLO11/B2TOP,itopn,tcor1,tcor2   
+      COMMON /BLO15/hcor2,shc	/findRLAT/FLON,RYEAR
      &   /iounit/konsol,mess     /CSW/SW(25),ISW,SWC(25)
-     &   /QTOP/Y05,H05TOP,QF,XNETOP,XM3000,HHALF,TAU
-
+     &   /QTOP/Y05,H05TOP,QF,XNETOP,XM3000,HHALF,TAU 
+     &   /cotec/hnea,hpp
       EXTERNAL          XE1,XE2,XE3_1,XE4_1,XE5,XE6,FMODIP
 
-      DATA icalls/0/
+      DATA icalls/0/, dplas/100,150,10,10/  
+	  DATA DTE/5.,5.,10.,20.,20./, DTI/5.,5.,10.,20.,20./
 
         save
 ! --- buffer initialization  (Michael Hirsch, SciVision, Inc. ---
@@ -503,7 +515,7 @@ c set switches for NRLMSIS00
 7397    OUTF(KI,kk)=-1.
 C
 C oarr(1:6,10,15,16,33,35,39,41,46,89,90) are used for inputs.
-C The fill value is -1 for most oarr output parameters. It is
+C The fill value is -1 for most oarr output parameters. It is 
 C -99 for all latitudinal variables, solar zenith angle, sun
 C declination and IG12. It is 9999 for ion drift.
 C 
@@ -577,6 +589,9 @@ C ASTRONOMICAL UNION .
         	BQUAD=ERPOL*ERPOL
         	EEXC=0.01675
         	dimo=0.311653
+C Initialize D_MSIS(1) to avoid accidental activation of 
+C user input for Tn-exospheric in calls to GTD7 (CIRA.FOR)
+            D_MSIS(1) = 0.0
         	endif
  
         numhei=int(abs(heiend-heibeg)/abs(heistp))+1
@@ -602,16 +617,6 @@ C
         DNDS(4)=.016
         XNAR(1)=0.0
         XNAR(2)=0.0
-        DTE(1)=5.
-        DTE(2)=5.
-        DTE(3)=10.
-        DTE(4)=20.
-        DTE(5)=20.
-        DTI(1)=5.
-        DTI(2)=5.
-        DTI(3)=10.
-        DTI(4)=20.
-        DTI(5)=20.
 C
 C FIRST SPECIFY YOUR COMPUTERS CHANNEL NUMBERS ....................
 C AGNR=OUTPUT (OUTPUT IS DISPLAYED OR STORED IN FILE OUTPUT.IRI)...
@@ -640,6 +645,7 @@ c
       F1_OCPRO=(jf(19))
       F1_L_COND=(.not.jf(20))
       DREG=jf(24)
+
 c
 c rz12, IG12, F10.7D, PF10.7 input option ............................
 c
@@ -669,16 +675,6 @@ c
           f10781in=OARR(46)
       else
           oarr(46)=-1.
-      ENDIF
-      IF(jf(45)) THEN
-          HNEA=65
-      else
-          HNEA=oarr(89)
-      ENDIF
-      IF(jf(46)) THEN
-          HNEE=2000
-      else
-          HNEE=oarr(90)
       ENDIF
 c
 c Topside density ....................................................
@@ -801,7 +797,6 @@ C
 c
 c lists the selected options before starting the table
 c
-
       if(icalls.ge.1.or.(.not.mess)) goto 8201
           write(konsol,2911) 
         if(NODEN) goto 2889
@@ -991,18 +986,16 @@ c calculate L-value, dip lati, and B_abs needed for invdip computation
 c calculating invdip at 600 km for Ni-TBT-2015 and Ti-Tru-2021 and
 c invdip_old for Te-TBT-2012
 c
-		invdip=-100.0
-		invdip_old=-100.0
-       	call igrf_sub(lati,longi,ryear,height,fl,icode,dipl,babs)
-        	if(fl.gt.10.) fl=10.
+		invdip=-99.0
+		invdip_old=-99.0
 		if(jf(3).and.(.not.jf(6))) then
-c       	call igrf_sub(lati,longi,ryear,600.0,fl,icode,dipl,babs)
-c        	if(fl.gt.10.) fl=10.
+			call igrf_sub(lati,longi,ryear,600.0,fl,icode,dipl,babs)
+			if(fl.gt.10.) fl=10.
       		invdip=INVDPC(FL,DIMO,BABS,DIPL)
 			endif
 		if((jf(2).and.(.not.jf(23))).or.(jf(2).and.jf(48))) then
-c      		call igrf_sub(lati,longi,ryear,600.0,fl,icode,dipl,babs)
-c        	if(fl.gt.10.) fl=10.
+      		call igrf_sub(lati,longi,ryear,600.0,fl,icode,dipl,babs)
+        	if(fl.gt.10.) fl=10.
       		invdip_old=INVDPC_OLD(FL,DIMO,BABS,DIPL)
 			endif
 
@@ -1013,8 +1006,8 @@ c        	if(fl.gt.10.) fl=10.
 c
 c calculation of CGM coordinates if abs(latitude) > 25 degrees
 c
-		cgm_lat=-100.0
-		cgm_lon=-100.0
+		cgm_lat=-99.0
+		cgm_lon=-99.0
 		cgm_mlt=-1.0
         if(jf(47).and.(abslat.gt.25.0)) then
 	        DAT(1,1)=lati
@@ -1045,7 +1038,6 @@ c
         	if(hour.gt.24.) hour=hour-24.
         endif
         CALL CLCMLT(IYEAR,DAYNR,HOURUT,LATI,LONGI,XMLT)
-c		print*,hour,xmlt
 c
 c SEASON assumes equal length seasons (92 days) with spring 
 c (SEASON=1) starting at day-of-year=45; for lati < 0 adjustment 
@@ -1237,10 +1229,13 @@ C lower height boundary (HNEA), upper boundary (HNEE)
 C
       
 1334  continue
-      IF(JF(45).and.DNIGHT) HNEA=80.
+
+      HNEE = 2000.
+	  HNEA = 65.
+      IF(DNIGHT) HNEA = 80.
       IF(NODEN) GOTO 4933
 
-      DELA=4.32
+      DELA = 4.32
       IF(ABSMDP.GE.18.) DELA=1.0+EXP(-(ABSMDP-30.0)/10.0)
       DELL=1+EXP(-(ABSLAT-20.)/10.)
 c
@@ -1426,9 +1421,9 @@ c calculation of equatorward auroral boundary: corrected magnetic
 c latitude (CGM) of the boundary (ab_mlat(1:48)) for MLT=0.0,0.5,
 c 1.0 ... 23.5 h and kp=xkp.
 c 
-		cgmlat=-100.0
+		cgmlat=-99.0
 		do 2929 i=1,48  
-2929		ab_mlat(i)=-100.0
+2929		ab_mlat(i)=-99.0
         if(jf(33)) then
         	zmlt=xmlt
 c            	zmlt=cgm_mlt
@@ -1482,7 +1477,6 @@ c SHUBIN-COSMIC model
 			CALL model_hmF2(iday,month,hourut,modip,longi,
      &				    F10781,HMF2)
 		ENDIF
-
         nmono=nmonth
         MONTHO=MONTH
         iyearo=iyear
@@ -1494,7 +1488,6 @@ c SHUBIN-COSMIC model
         ut0=hourut
         foF2ino=foF2in
         hmF2ino=hmF2in
-
 c
 c topside profile parameters .............................
 c
@@ -1526,28 +1519,6 @@ c
         Z2=Z/(BETA*Z1*Z1)
         DELTA=(ETA/Z1-ZETA/2.0)/(ETA*Z2+ZETA/400.0)
 c
-c Correction term for topside (Bilitza) depends on modip, hour,
-c sax300, sux300, and hmF2
-c
-      if(itopn.eq.1.or.itopn.eq.3) then
-          zmp1 = exp(modip / 10.)
-          zmp11 = 1. + zmp1
-          zmp111 = zmp1 / (zmp11 * zmp11)
-          zmp2 = exp(modip / 19.)
-          zmp22 = 1. + zmp2
-          zmp222 = zmp2 / (zmp22 * zmp22) 
-          r2n = -0.84 - 1.6 * zmp111  
-          r2d = -0.84 - 0.64 * zmp111 
-          x1n = 230. - 700. * zmp222  
-          x1d = 550. - 1900. * zmp222
-          r2 = HPOL(HOUR,r2d,r2n,SAX300,SUX300,1.,1.)
-          x1 = HPOL(HOUR,x1d,x1n,SAX300,SUX300,1.,1.)
-          hcor1 = hmF2 + x1
-          x12 = 1500. - x1
-	      tc3 = r2 / x12
-		  hcor2 = (hcor1 + hmF2)/2.0
-		  shc = (hcor2-hmF2) / alog(2.0)
-          endif
 c NEW-GUL--------------------------------
 c
 c Correction term for topside (Gulyaeva)
@@ -1576,6 +1547,111 @@ c
          b2k=(b2k*ee+1.0)/(ee+1.0)
          B2TOP=b2k*B2bot
       endif
+
+c
+c Plasmapause height hpp for plasmapause fixed at L=5 and
+c calculated assuming a dipole magnetic field
+c 
+c        xlpp=5.0
+c        xlpp=5.0
+		ppmlat=mlat
+		ppb=60.0
+		if(abs(ppmlat).gt.ppb) ppmlat=sign(ppb,ppmlat)
+		cosmag=cos(ppmlat*umr)
+		cosmag2=cosmag*cosmag
+c        hpp=ERA*(xlpp*cosmag2-1.0)
+        hpp=10000.0
+		xlpp=(1.0+hpp/ERA)/cosmag2
+c
+c Parameters for TCOR1 and TCOR2 calculation for IRI2001cor
+C and IRI-TCOR2  
+c
+      TCOR1=0.0
+	  TCOR2=0.0
+      if(itopn.eq.1.or.itopn.eq.3) then
+          zmp111 = EPLA(modip,10.0,0.0)
+          zmp222 = EPLA(modip,19.0,0.0) 
+          r2n = -0.84 - 1.6 * zmp111  
+          r2d = -0.84 - 0.64 * zmp111 
+          x1n = 230. - 700. * zmp222  
+          x1d = 550. - 1900. * zmp222
+          r2 = HPOL(HOUR,r2d,r2n,SAX300,SUX300,1.,1.)
+          x1 = HPOL(HOUR,x1d,x1n,SAX300,SUX300,1.,1.)
+          hcor1 = hmF2 + x1
+          x12 = 1500. - x1
+	      tc3 = r2 / x12
+		  hcor2 = (hcor1 + hmF2)/2.0
+		  shc = (hcor2-hmF2) / alog(2.0)
+c
+c plasmasphere profile parameters .............................
+c plasmapause outer boundary fixed at L=5.1 
+c (inner boundary at L=5)
+c
+c          xlppo=5.1		
+c
+c calculate height of outer boundary of plasmapause (hppo) and 
+c L-values at mid point below and above plasmapause (xlmid and 
+c xlpt) assuming a dipole magnetic field
+c 
+c        hppo=ERA*(xlppo*cosmag2-1.0)
+c        hmid=(hpp+hmF2+1500.0)/2.0
+        hmid=5000.0
+c        hpt=2*hpp-hmid
+        hppo=20000.0
+        hpt=30000.0
+		xlmid=(1.0+hmid/ERA)/cosmag2
+		xlpt=(1.0+hpt/ERA)/cosmag2
+		xlppo=(1.0+hppo/ERA)/cosmag2
+c		
+c plasmasphere models (Gallagher-2000, Ohzogin-2012)
+c		
+        if(jf(49)) then
+		  xnepp=ohzden(xlpp,ppmlat)
+		  xnemid=ohzden(xlmid,ppmlat)
+		  xneppo=ohzden(xlppo,ppmlat)
+		  xnept=ohzden(xlpt,ppmlat)
+        else
+		  xnepp=gallden(xlpp,daynr,rssn)
+		  xnemid=gallden(xlmid,daynr,rssn)
+		  xneppo=gallden(xlppo,daynr,rssn)
+		  xnept=gallden(xlpt,daynr,rssn)
+       endif
+c		xnepp1=xnepp/10.0
+c        xneppo=caadenet(xlppo,xmlt)
+c        xnept=caadenet(xlpt,xmlt)
+c		
+c Booker parameters for plasmaspheric extension
+c		
+        PAH(1)=hcor1
+        PAH(2)=hmf2+1500.0
+        PAH(3)=hmid		
+        PAH(4)=hpp
+        PAH(5)=hppo
+        PAH(6)=hpt      ! 2*hpp-hmid
+        PALOGNE(1)=0.0
+        PALOGNE(2)=r2*alg10
+        PALOGNE(3)=log(xnemid/nmf2s)
+        PALOGNE(4)=log(xnepp/nmf2s)
+        PALOGNE(5)=log(xneppo/nmf2s)
+        PALOGNE(6)=log(xnept/nmf2s)
+          tcor1=0.0        
+        CALL SOCO(daynr,HOUR,LATI,LONGI,hmid,SUC,zxz,sap,sup)
+		   TCOR2 = TCOR2CAL(hmid,hmF2,hour,modip,pf107,sap,sup)
+		   znemid = log(XE_1(hmid)/nmf2s)
+           palogne(3)=palogne(3)-znemid
+        CALL SOCO(daynr,HOUR,LATI,LONGI,hpp,SUC,zxz,sap,sup)
+		   TCOR2 = TCOR2CAL(hpp,hmF2,hour,modip,pf107,sap,sup)
+ 		   znepp = log(XE_1(hpp)/nmf2s)
+           palogne(4)=palogne(4)-znepp
+        CALL SOCO(daynr,HOUR,LATI,LONGI,hppo,SUC,zxz,sap,sup)
+		   TCOR2 = TCOR2CAL(hppo,hmF2,hour,modip,pf107,sap,sup)
+ 		   zneppo = log(XE_1(hppo)/nmf2s)
+           palogne(5)=palogne(5)-zneppo
+        CALL SOCO(daynr,HOUR,LATI,LONGI,hpt,SUC,zxz,sap,sup)
+		   TCOR2 = TCOR2CAL(hpt,hmF2,hour,modip,pf107,sap,sup)
+ 		   znept = log(XE_1(hpt)/nmf2s)
+           palogne(6)=palogne(6)-znept
+		endif
 c
 c Bottomside thickness parameter B0 and shape parameters B1
 c                              
@@ -1596,8 +1672,8 @@ cnew!          IF (FNIGHT) GRAT = 0.91D0 - HMF2/4000.D0
         if(B0IN) B0=B0_US
         if(B1IN) B1=B1_US
         if(B1.gt.6) B1=6.0
-        if(B1.lt.0.6) B1=0.6
-        
+        if(B1.lt.0.6) B1=0.6        
+
 c
 c F1 layer height hmF1, critical frequency foF1, peak density NmF1
 c No F1 layer if f1_ocpro=jf(19) and f1_l_cond=.not.jf(20) are false
@@ -1872,7 +1948,7 @@ C
 4933  HTA=60.0
       HEQUI=120.0
       HTE=3000.0
-      IF(NOTEM) GOTO 240
+      IF(NOTEM.and.(NOION.or..not.RBTT)) GOTO 240
       SEC=hourut*3600.
       CALL APFMSIS(ISDATE,HOURUT,IAPO)
       if(iapo(2).lt.0.0) then
@@ -2089,18 +2165,23 @@ C
       HNIA=75.
       if(RBTT) HNIA=80.
       HNIE=2000.
-       
-C
+ 
+C*****************************************************************
 C CALCULATION FOR THE REQUIRED HEIGHT RANGE.......................
+C
 C In the absence of an F1 layer hmf1=hz since hmf1 is used in XE
 C
-
 141     xhmf1=hmf1
         IF(hmf1.le.0.0) HMF1=HZ
 
         height=heibeg
         kk=1
 		xinv=0.0
+c        jfirsta=0
+c        jfirste=0
+        jfirsta=1
+        jfirste=1
+
 
 300   CALL SOCO(daynr,HOUR,LATI,LONGI,height,SUNDEC,XHI,SAX,SUX)
 c no longer calculating invdip for each height
@@ -2109,8 +2190,6 @@ c        	if(fl.gt.10.) fl=10.
 c      		invdip=INVDPC(FL,DIMO,BABS,DIPL)
 c			yinv=invdip-xinv
 c      		invdip_old=INVDPC_OLD(FL,DIMO,BABS,DIPL)
-c           print 1204, height,invdip,yinv,invdip_old,mlat,fl
-c1204  Format(1x,F6.0,F9.2,F9.2,F9.2,F9.2,F9.2)
 c           if(height.eq.heibeg) xinv=invdip
 
 	  IF(NODEN) GOTO 330
@@ -2118,8 +2197,21 @@ c           if(height.eq.heibeg) xinv=invdip
 c
 c electron density ELEDE in m-3 in outf(1,*)
 c
-      IF((HEIGHT.GT.HNEE).OR.(HEIGHT.LT.HNEA)) GOTO 330
-
+      IF(HEIGHT.LT.HNEA) then
+	     if(mess.and.(jfirsta.lt.1)) 
+     &	    write(konsol,2920) hnea
+2920     format(/'At heights below ',F4.1,'km Ne is ',  
+     &    'negligible and IRI vaues are not calculated.')
+         jfirsta=1
+		 GOTO 330
+		 endif
+      IF(HEIGHT.GT.HNEE) then
+	     if(mess.and.(jfirste.lt.1)) 
+     &	    write(konsol,2919) hnee
+2919     format(/'At heights above ',F6.1,'km a first-',
+     &    'order plasmaspheric extension is applied.')
+         jfirste=1
+		 endif
       IF(LAYVER) THEN
           ELEDE=-9.
           IF(IIQU.LT.2) ELEDE=
@@ -2128,27 +2220,31 @@ c
           goto 330
           endif
 
-      tcor1=0.0
-       IF(itopn.eq.1.or.itopn.eq.3) then             
-          IF(height.lt.hcor1) goto 2319
-          xred = height - hcor1
-          rco = tc3 * xred
-          TCOR1 = rco * alg10
-          endif
+c
+c Calculates height-dependent correction factors for topside options
+c 2001cor and COR2
+c
+		 
+      IF(itopn.eq.1.or.itopn.eq.3) then             
+	    tcor1 = 0.0
+	    IF(height.lt.hcor1) goto 2319	  
+c        IF(jf(46)) then
+c	      xred = height - hcor1
+c		  rco = tc3 * xred
+c		  tcor1 = rco * alg10
+c		else
+		  tcor1 = BOOKER(height,6,pah,palogne,dplas)
+c        endif
 
-2319  tcor2=0.0
-      if(itopn.eq.3.and.height.gt.hmf2) then
-      	  call tops_cor2(height,modip,a01)
-      	  tcor2d=a01(1,1)+a01(2,1)*pf107
-          tcor2n=a01(1,2)+a01(2,2)*pf107
-          tcor2 = HPOL(HOUR,tcor2d,tcor2n,SAX300,SUX300,1.,1.)
-c		  tcor2=(exp((height-hmF2)/shc)-1)*tcor2
-		  if(height.lt.hcor2) tcor2=(exp((height-hmF2)/shc)-1)*tcor2
-      	  endif	
-          tcor=tcor1+tcor2 
-        
+2319    tcor2 = 0.0
+        if(itopn.eq.3.and.height.gt.hmf2) then	  
+          CALL SOCO(daynr,HOUR,LATI,LONGI,height,SUC,zxz,sap,sup)
+	      tcor2 = TCOR2CAL(height,hmF2,hour,modip,pf107,sap,sup)
+		  endif	
+        endif
+		
       ELEDE=XE_1(HEIGHT)
-      
+	  
 c
 c FIRI D region 
 c
@@ -2157,14 +2253,20 @@ c
             call F00(HEIGHT,LATI,DAYNR,XHI,F107D,EDENS,IERROR)
             if(ierror.eq.0.or.ierror.eq.2) elede=edens
             endif
-
       OUTF(1,kk)=ELEDE
+	  
+c
+c plasma-frequency divided by gyro-frequency
+c	
+  
+      pf_gf = 3.2045e-3 * sqrt(elede/1.e6)/babs	
+      OUTF(15,kk)=pf_gf
 
 c
 c plasma temperatures in Kelvin
 c
 
-330   IF(NOTEM) GOTO 7108
+330   IF(NOTEM.and.(NOION.or..not.RBTT)) GOTO 7108
       IF((HEIGHT.GT.HTE).OR.(HEIGHT.LT.HTA)) GOTO 7108
       CALL GTD7(IYD,SEC,HEIGHT,LATI,LONGI,HOUR,F10781OBS,
      &        F107YOBS,IAPO,0,D_MSIS,T_MSIS)
@@ -2200,6 +2302,9 @@ c
       if(RBTT) then
         if (height.ge.300.) then
 c Triskova-Truhlik-Smilauer-2003 model
+			call igrf_sub(lati,longi,ryear,height,fl,icode,dipl,babs)
+			if(fl.gt.10.) fl=10.
+      		invdip=INVDPC(FL,DIMO,BABS,DIPL)
 			call CALION(invdip,xmlt,height,daynr,pf107obs,
      &  	   xic_O,xic_H,xic_He,xic_N)
        		rox=xic_O*100.
@@ -2307,8 +2412,8 @@ c            call vdrift(hour,longi,param,drift)
       CALL vfjmodelrocstart(FJM)
       CALL vfjmodelrocinit(F107D,DAYNR,JSEA,JF107)
       CALL vfjmodelroc(FJM,HOUR,LONGI,JSEA,JF107,DRIFT)
-
             endif
+
 c
 c spread-F occurrence probability
 c
@@ -2327,12 +2432,12 @@ c
 			ispf=int((spfhour-17.75)/0.5)+1
  			if(ispf.gt.0.and.ispf.lt.26) spreadf=osfbr(ispf)
 1937   continue
+
 C
 C ADDITIONAL PARAMETER FIELD OARR: angles are given in degrees,
 C times in decimal hours, altitudes in km, densities in m-3, and
 C temperatures in K      
 C
-
         IF(NODEN) GOTO 6192
       OARR(1)=NMF2S		! F2-peak density in m-3
       OARR(2)=HMF2		! F2-peak height in km
@@ -2346,7 +2451,7 @@ C
       OARR(10)=B0		! bottomside thickness parameter in km
       OARR(11)=VNER		! density in m-3 at E-valley bottom 
       OARR(12)=HEF		! height in km of E-valley top (Ne(HEF)=NmE)
-6192    IF(NOTEM) GOTO 6092
+6192    IF(NOTEM.and.(NOION.or..not.RBTT)) GOTO 6092
       OARR(13)=ATE(2)	! electron temperature Te in K at AHH(2)
       OARR(14)=AHH(2)	! intermediate height between 120km and 300/350km
       OARR(15)=ATE(3)	! Te at 300km/350km for BIL-1995/TBT2012+SA model
@@ -2419,7 +2524,6 @@ c output of solar indices used
 c		write(6,10201) iyyyy,rssn,gind,cov,covsat,f107d,f10781,
 c     &	f107365,pf107,cov-f10781,cov-f107365,cov-pf107	
 c10201	format(I5,11F6.1)
-
        icalls=icalls+1
 
       RETURN

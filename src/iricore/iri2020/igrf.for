@@ -710,15 +710,14 @@ C                                 = -2, records out of order
 C                                 = FORTRAN run-time error number    
 C ===============================================================               
                                                                                 
-        CHARACTER(*), intent(in) ::  FSPEC
-        character(80) :: FOUT
+        CHARACTER  FSPEC*(*), FOUT*80
         character(256) :: datadir
         DIMENSION       GH(196)
         LOGICAL		mess 
-        COMMON/iounit/konsol,mess
+        COMMON/iounit/konsol,mess        
         common/folders/datadir
 
-        do 1 j=1,196  
+        do 1 j=1,196
 1          GH(j)=0.0
 
 C ---------------------------------------------------------------               
@@ -737,10 +736,8 @@ c 667    FORMAT('/var/www/omniweb/cgi/vitmo/IRI/',A13)
         READ (IU, *, IOSTAT=IER, ERR=999) (GH(i),i=1,nm) 
         goto 888 
                
-999     if (mess) write(konsol,*) 'Error while reading ',
-     &        trim(datadir)//'/igrf/'//FOUT
-
-        stop 74
+999     if (mess) write(konsol,100) trim(datadir)//'/igrf/'//FOUT
+100     FORMAT('Error while reading ',A13)
 
 888     CLOSE (IU)                                                                                                                                   
         RETURN                                                       
