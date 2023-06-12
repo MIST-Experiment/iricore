@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iricore"
-version = "1.4.3"
+version = "1.4.4"
 description = ""
 authors = ["Vadym Bidula <vadym.bidula@gmail.com>"]
 readme = "README.md"
@@ -23,6 +23,7 @@ pymap3d = "^3.0.1"
 pandas = "^2.0.1"
 astropy = "^5.2.2"
 jupyter = "^1.0.0"
+cartopy = "^0.21.1"
 
 [build-system]
 requires = ["cmake", "poetry-core",  "wheel", "setuptools-cpp"]

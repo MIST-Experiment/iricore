@@ -7,18 +7,19 @@ from ctypes import *
 from datetime import datetime
 from os.path import join as jpath
 from typing import Sequence, Literal
-from .config import IRI_VERSIONS, DEFAULT_VERSION
 
 import numpy as np
 import pymap3d as pm
 from numpy.ctypeslib import as_ctypes
 
+from .config import IRI_VERSIONS, DEFAULT_VERSION
 from .modules import srange, R_EARTH
 from .read_iri_data import readapf107
 
 _iri_cfd = os.path.dirname(os.path.abspath(__file__))
 
 IRI_DATA = readapf107(20)
+
 
 def _import_libs():
     iri2016 = np.ctypeslib.load_library("libiri2016", _iri_cfd)
@@ -133,13 +134,29 @@ def _extract_data(iri_res: np.ndarray, index: int, ncoord: int, alt_range: [floa
 
 
 def IRI(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], lons: Sequence[float],
-        replace_missing: float = np.nan, version: Literal[16, 20] = DEFAULT_VERSION) -> dict:
-    jf = np.ones(50, dtype=np.int32, order="F")
-    jf[[2, 3, 4, 5, 11, 20, 21, 22, 23, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
+        replace_missing: float = np.nan, version: Literal[16, 20] = DEFAULT_VERSION, calc_ions: bool = False,
+        jf: Sequence[bool] = None) -> dict:
+    if jf is None:
+        jf = np.ones(50, dtype=np.int32, order="F")
+        jf[[2, 3, 4, 5, 11, 20, 21, 22, 23, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
+        if calc_ions:
+            jf[[1, 2]] = 1
+    else:
+        jf = np.asarray(jf, dtype=np.int32, order="F")
+        if jf.size != 50:
+            raise ValueError("Length of jf array must be 50")
     iri_res = _call_iri_sub(dt, alt_range, lats, lons, jf, version)
+    iri_res = np.where(np.isnan(iri_res), 0, iri_res)
     ne = _extract_data(iri_res, 0, len(lats), alt_range, replace_missing)
     te = _extract_data(iri_res, 3, len(lats), alt_range, replace_missing)
-    return {'ne': ne, 'te': te}
+    o = _extract_data(iri_res, 4, len(lats), alt_range, replace_missing)
+    h = _extract_data(iri_res, 5, len(lats), alt_range, replace_missing)
+    he = _extract_data(iri_res, 6, len(lats), alt_range, replace_missing)
+    o2 = _extract_data(iri_res, 7, len(lats), alt_range, replace_missing)
+    no = _extract_data(iri_res, 8, len(lats), alt_range, replace_missing)
+    n = _extract_data(iri_res, 10, len(lats), alt_range, replace_missing)
+
+    return dict(ne=ne, te=te, o=o, h=h, he=he, o2=o2, no=no, n=n)
 
 
 def IRI_etemp_only(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], lons: Sequence[float],
@@ -170,7 +187,7 @@ def stec(alt: float, az: float, dt: datetime, position: Sequence[float, float, f
     # Calculating input parameters (assuming Earth=sphere)
     hstep = (htop - hbot) / npoints
     heights = np.linspace(hbot, htop, npoints)
-    rslant = srange(np.deg2rad(90 - alt), heights*1e3)
+    rslant = srange(np.deg2rad(90 - alt), heights * 1e3)
     ell = pm.Ellipsoid(R_EARTH, R_EARTH)
     slat, slon, _ = pm.aer2geodetic(az, alt, rslant, *position, ell=ell)
 
