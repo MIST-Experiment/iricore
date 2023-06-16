@@ -18,6 +18,7 @@ from .read_iri_data import readapf107
 
 _iri_cfd = os.path.dirname(os.path.abspath(__file__))
 
+# TODO: Fix data reading from Python
 IRI_DATA = readapf107(20)
 
 
@@ -138,7 +139,7 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], l
         jf: Sequence[bool] = None) -> dict:
     if jf is None:
         jf = np.ones(50, dtype=np.int32, order="F")
-        jf[[2, 3, 4, 5, 11, 20, 21, 22, 23, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
+        jf[[2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
         if calc_ions:
             jf[[1, 2]] = 1
     else:
@@ -155,14 +156,13 @@ def IRI(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], l
     o2 = _extract_data(iri_res, 7, len(lats), alt_range, replace_missing)
     no = _extract_data(iri_res, 8, len(lats), alt_range, replace_missing)
     n = _extract_data(iri_res, 10, len(lats), alt_range, replace_missing)
-
     return dict(ne=ne, te=te, o=o, h=h, he=he, o2=o2, no=no, n=n)
 
 
 def IRI_etemp_only(dt: datetime, alt_range: [float, float, float], lats: Sequence[float], lons: Sequence[float],
                    replace_missing: float = np.nan, version: Literal[16, 20] = DEFAULT_VERSION) -> dict:
     jf = np.ones(50, dtype=np.int32, order="F")
-    jf[[0, 2, 3, 4, 5, 11, 20, 21, 22, 23, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
+    jf[[0, 2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
     iri_res = _call_iri_sub(dt, alt_range, lats, lons, jf, version)
     te = _extract_data(iri_res, 3, len(lats), alt_range, replace_missing)
     return {'te': te}
@@ -193,7 +193,7 @@ def stec(alt: float, az: float, dt: datetime, position: Sequence[float, float, f
 
     # IRI call and data extraction
     jf = np.ones(50, dtype=np.int32, order="F")
-    jf[[1, 2, 3, 4, 5, 11, 20, 21, 22, 23, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
+    jf[[1, 2, 3, 4, 5, 11, 20, 21, 22, 25, 27, 28, 29, 33, 34, 35, 36, 46]] = 0
     iri_res = _call_stec(dt, heights, slat, slon, jf, version)
     ne = iri_res[0].transpose()
     ne = ne.reshape((len(heights), -1))[:, 0]
