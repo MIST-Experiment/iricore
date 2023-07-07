@@ -1,29 +1,25 @@
 [tool.poetry]
 name = "iricore"
-version = "1.4.6"
-description = ""
+version = "1.5.0.dev0"
+description = "A Python wraper to the Inernational Ionosphere Model"
 authors = ["Vadym Bidula <vadym.bidula@gmail.com>"]
 readme = "README.md"
 build = "build.py"
 
 [tool.poetry.dependencies]
-python = ">=3.8, <4.0"
-numpy = "^1.22"
-fortranformat = "^1.2.2"
+python = ">=3.9, <4.0"
+numpy = "^1.25.0"
+fortranformat = "^2.0.0"
 pymap3d = "^3.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
-setuptools-cpp = "^0.1.0"
-tqdm = "^4.64.1"
-matplotlib = "^3.6.0"
-cmake-build-extension = "^0.5.1"
-pyqt5 = "^5.15.7"
-pymap3d = "^3.0.1"
-pandas = "^2.0.1"
-astropy = "^5.2.2"
-jupyter = "^1.0.0"
 cartopy = "^0.21.1"
+tqdm = "^4.65.0"
+matplotlib = "^3.7.2"
+pandas = "^2.0.3"
+astropy = "^5.3.1"
+jupyter = "^1.0.0"
 
 [build-system]
 requires = ["cmake", "poetry-core",  "wheel", "setuptools-cpp"]
