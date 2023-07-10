@@ -6,12 +6,21 @@ authors = ["Vadym Bidula <vadym.bidula@gmail.com>"]
 readme = "README.md"
 build = "build.py"
 
+include = [
+    # Source files for Fortran extensions must be included in the source distribution.
+    {path = "src/iricore/CMakeLists.txt", format = "sdist"},
+    {path = "src/iricore/*.f90", format = "sdist"},
+    {path = "src/iricore/iri2016/*.for", format = "sdist"},
+    {path = "src/iricore/iri2020/*.for", format = "sdist"},
+    # Fortran extensions must be included in the wheel distribution.
+    {path = "iricore/*.so", format = "wheel"},
+]
+
 [tool.poetry.dependencies]
 python = ">=3.9, <4.0"
 numpy = "^1.25.0"
 fortranformat = "^2.0.0"
 pymap3d = "^3.0.1"
-
 
 [tool.poetry.group.dev.dependencies]
 cartopy = "^0.21.1"
@@ -20,7 +29,9 @@ matplotlib = "^3.7.2"
 pandas = "^2.0.3"
 astropy = "^5.3.1"
 jupyter = "^1.0.0"
+scikit-build = "^0.17.6"
+cmake = "^3.26.4"
 
 [build-system]
-requires = ["cmake", "poetry-core",  "wheel", "setuptools-cpp"]
+requires = ["scikit-build", "cmake", "poetry-core"]
 build-backend = "poetry.core.masonry.api"
