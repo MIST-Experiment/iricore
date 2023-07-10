@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iricore"
-version = "1.5.0.dev0"
+version = "1.5.1"
 description = "A Python wraper to the Inernational Ionosphere Model"
 authors = ["Vadym Bidula <vadym.bidula@gmail.com>"]
 readme = "README.md"
@@ -8,11 +8,11 @@ build = "build.py"
 
 include = [
     # Source files for Fortran extensions must be included in the source distribution.
-    {path = "src/iricore/CMakeLists.txt", format = "sdist"},
+    {path = "CMakeLists.txt", format = "sdist"},
     {path = "src/iricore/*.f90", format = "sdist"},
     {path = "src/iricore/iri2016/*.for", format = "sdist"},
     {path = "src/iricore/iri2020/*.for", format = "sdist"},
-    # Fortran extensions must be included in the wheel distribution.
+    # Fortran extensions and must be included in the wheel distribution.
     {path = "iricore/*.so", format = "wheel"},
 ]
 
