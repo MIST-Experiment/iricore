@@ -20,7 +20,7 @@ include = [
 python = ">=3.9, <4.0"
 numpy = "^1.25.0"
 fortranformat = "^2.0.0"
-pymap3d = "^3.0.1"
+pymap3d = { extras = ["core"], version = "^3.0.1" }
 
 [tool.poetry.group.dev.dependencies]
 cartopy = "^0.21.1"
@@ -31,6 +31,10 @@ astropy = "^5.3.1"
 jupyter = "^1.0.0"
 scikit-build = "^0.17.6"
 cmake = "^3.26.4"
+sphinx = "^7.0.1"
+sphinx-autodoc-typehints = "^1.23.3"
+future-typing = "^0.4.1"
+sphinxemoji = "^0.2.0"
 
 [build-system]
 requires = ["scikit-build", "cmake", "poetry-core"]

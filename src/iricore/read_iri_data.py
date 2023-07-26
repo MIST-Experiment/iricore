@@ -1,15 +1,13 @@
-from typing import Literal
-
-import numpy as np
-import fortranformat as ff
 import os
-from .config import DEFAULT_VERSION
+
+import fortranformat as ff
+import numpy as np
 
 _iri_cfd = os.path.dirname(os.path.abspath(__file__))
 
 
-def readapf107(version: Literal[16, 20] = DEFAULT_VERSION):
-    datadir = os.path.join(_iri_cfd, f"data/data{version}")
+def readapf107():
+    datadir = os.path.join(_iri_cfd, f"data/")
     with open(os.path.join(datadir, "index/apf107.dat"), "r") as file:
         lines = file.readlines()
     nlines = len(lines)
@@ -28,4 +26,3 @@ def readapf107(version: Literal[16, 20] = DEFAULT_VERSION):
     aap = np.zeros((27000, 9), order='F', dtype=np.float32)
     aap[:nlines, :] = data[:, 3:12].astype(np.int32)
     return aap, af107, nlines
-
