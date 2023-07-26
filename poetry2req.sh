@@ -1,1 +1,1 @@
-poetry export --without-hashes --format=requirements.txt > docs/requirements.txt
+poetry export --with dev --without-hashes --format=requirements.txt > docs/requirements.txt

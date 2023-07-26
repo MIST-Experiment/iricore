@@ -1,9 +1,7 @@
 # iricore
 A Python interface to IRI-2016 and IRI-2020 using `ctypes` communication.
 
-**Important!** Because this package is mainly used for the [MIST experiment](http://www.physics.mcgill.ca/mist/), 
-the `iricore` cuts off calculation of unnecessary atmospheric parameters available in IRI-2016, leaving only electron density
-and electron temperature. All other parameters can be restored on demand (please contact me).
+**The extensive documentation is available at the [RTD wbsite](dionpy.readthedocs.io/).**
 
 ## Installation
 
@@ -42,6 +40,3 @@ import iricore
 iricore.update()
 ```
 to any Python script.
-
-## Usage
-For usage examples see `examples/`.
