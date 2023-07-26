@@ -14,6 +14,10 @@ iricore.stec()
 ----------------
 .. autofunction:: iricore.stec
 
+iricore.vtec()
+----------------
+.. autofunction:: iricore.vtec
+
 
 iricore.update()
 ----------------

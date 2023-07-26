@@ -21,7 +21,7 @@ Linux
 
 Windows
 -------
-Although the Windows platform is not supported by ``iricore``, it is not impossible to use it on Windows.
+It is not impossible to use ``iricore`` on Windows. However, the installation process can be quite troublesome.
 If you are on Windows, consider installing `WSL <https://docs.microsoft.com/en-us/windows/wsl/install>`_ and then follow
 the steps for Linux.
 If that is not an option, then:

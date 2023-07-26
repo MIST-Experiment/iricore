@@ -7,6 +7,9 @@ The functionality of the package is limited since only the ``OUTF`` output array
 the ``iricore``. The use of the ``OARR`` array is not implemented, which, apart from additional output, disables
 the possibility of direct user input for IRI parameters.
 
+This documentation assumes that the user is already familiar with the way the IRI works. For more in-depth
+explanations, please refer to the official IRI documentation.
+
 .. note::
     The ``iricore`` package is not actively maintained. However, the package can be updated on reasonable
     requests, such as:
@@ -25,6 +28,5 @@ Contents
     :glob:
 
     installation
-    quickstart
-    user_guide/index
+    user_guide
     reference
