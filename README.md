@@ -1,7 +1,7 @@
 # iricore
 A Python interface to IRI-2016 and IRI-2020 using `ctypes` communication.
 
-**The extensive documentation is available at the [RTD wbsite](dionpy.readthedocs.io/).**
+**The extensive documentation is available at the [RTD wbsite](https://iricore.readthedocs.io/en/latest).**
 
 ## Installation
 
