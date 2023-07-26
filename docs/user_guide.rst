@@ -50,7 +50,7 @@ We can now plot the result:
     plt.ylabel("Height, [km]")
     plt.show()
 
-.. figure:: docs/images/ed_example.png
+.. figure:: images/ed_example.png
     :width: 600
     :align: center
 
@@ -100,7 +100,7 @@ accordingly:
     plt.show()
 
 
-.. figure:: docs/images/temp_example.png
+.. figure:: images/temp_example.png
     :width: 600
     :align: center
 
@@ -119,7 +119,7 @@ The ion density can be accessed through the ``o``, ``h``, ``he``, ``o2``, ``no``
     plt.legend()
     plt.show()
 
-.. figure:: docs/images/iondens_example.png
+.. figure:: images/iondens_example.png
     :width: 600
     :align: center
 
