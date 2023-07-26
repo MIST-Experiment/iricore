@@ -6,7 +6,6 @@ import numpy as np
 import src.iricore as iricore
 
 
-# TODO: Fix 2020 tests
 class TestIRI(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestIRI, self).__init__(*args, **kwargs)
