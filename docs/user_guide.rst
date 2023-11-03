@@ -152,9 +152,8 @@ IRI provides only vertical TEC routine (see :func:`iricore.vtec`).
 
 Vertical TEC
 ------------
-The :func:`iricore.vtec` function is a shortcut for calculating vertical TEC in the ``iricore``. Unlike
-:func:`iricore.stec`, the :func:`iricore.vtec` supports arrays of latitudes and longitudes for the input
-and is generally faster:
+The :func:`iricore.vtec` function is **not** a copy of original TEC calculation implemented in the IRI.
+The :func:`iricore.vtec` calculates and integrates electron density on a uniform grid with a given altitude step. Example:
 
 .. code-block:: python3
 
@@ -166,12 +165,13 @@ and is generally faster:
     lat = np.linspace(0, 90, 10)
     lon = np.linspace(0, 180, 10)
 
-    print(vtec(dt, lat, lon))
+    print(vtec(dt, lat, lon, hstep=0.5))
 
 .. code-block:: text
 
-    [26.230556  25.516603  54.677925  32.099552  14.885927
-     10.493999   8.127482   5.214446   3.845456  5.1186547]
+    [26.093887  25.40059   54.395958  31.925163  14.804036
+     10.436093,  8.083576   5.1865277  3.8248532  5.087081]
+
 
 Manual JF input
 ---------------

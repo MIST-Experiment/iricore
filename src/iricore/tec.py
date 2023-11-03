@@ -34,9 +34,9 @@ def _integrate_ne(ne, hstep):
 
 
 def vtec(dt: datetime, lat: float | np.ndarray, lon: float | np.ndarray, hbot: float = 90,
-         htop: float = 2000, npoints: int = 1000,
+         htop: float = 2000, hstep: float = 0.5,
          version: Literal[16, 20] = DEFAULT_IRI_VERSION,
-         jf: np.ndarray | str = None, _return_ne: bool = False):
+         jf: np.ndarray | str = None):
     """
     Vertical TEC calculated by integrating the electron density on the line of sight. This function
     is not a part of the source IRI code.
@@ -46,12 +46,10 @@ def vtec(dt: datetime, lat: float | np.ndarray, lon: float | np.ndarray, hbot: f
     :param lon: Geographical longitude.
     :param hbot: Bottom height limit for integration in [km].
     :param htop: Upper height limit for integration in [km].
-    :param npoints: Number of points to integrate.
+    :param hstep: Height step for integration in [km].
     :param version: IRI version number.
     :param jf: Array of JF parameters or string for predefined JF arrays to be used in the IRI_SUB function. See
                :func:`iricore.get_jf` for details. If not specified otherwise, the default IRI JF array will be used.
-    :param _return_ne: If True - also returns IRI Ne output and Ne after and before
-                       post-processing (used for debugging).
     :return: Slant TEC.
     """
 
@@ -66,16 +64,20 @@ def vtec(dt: datetime, lat: float | np.ndarray, lon: float | np.ndarray, hbot: f
         if isinstance(jf, np.ndarray) and jf.size != 50:
             raise ValueError("Length of jf array must be 50")
 
-    hstep = (htop - hbot) / npoints
-    iri_res = iri(dt, [hbot, htop, hstep], lat, lon, version, jf)
-    ne = iri_res.edens
-    ne_debug = ne.copy()
-    ne = _clean_ne_for_tec(ne)
-    tec_res = _integrate_ne(ne, hstep)
+    npoints = int(np.ceil((htop - hbot) / hstep))
+    nstages = int(np.ceil(npoints / 1000))
+    stage_ranges = [[
+        hbot + hstep * (1000 * i),
+        hbot + hstep * (1000 * (i + 1) - 1),
+        hstep
+    ] for i in range(nstages)]
+    stage_ranges[-1][1] = htop
 
-    if _return_ne:
-        return tec_res, ne, ne_debug
-    return tec_res
+    tec = 0.
+    for i in range(nstages):
+        iri_res = iri(dt, stage_ranges[i], lat, lon, version, jf)
+        tec += _integrate_ne(_clean_ne_for_tec(iri_res.edens), hstep)
+    return tec
 
 
 def stec(el: float, az: float, dt: datetime, lat: float, lon: float, height: float = 0, hbot: float = 90,
