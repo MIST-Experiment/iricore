@@ -8,6 +8,7 @@ import skbuild.constants
 
 __all__ = ("build",)
 
+
 def build(setup_kwargs: Dict[str, Any]) -> None:
     """Build Fortran-extensions."""
     skbuild.setup(**setup_kwargs, script_args=["build_ext"])
@@ -19,6 +20,7 @@ def build(setup_kwargs: Dict[str, Any]) -> None:
 
     # Copy built C-extensions back to the project.
     copy_files(src_dir, dest_dir, "**/*.so")
+
 
 def remove_files(target_dir: Path, pattern: str) -> None:
     """Delete files matched with a glob pattern in a directory tree."""
