@@ -75,6 +75,10 @@ def iri(dt: datetime, altrange: Annotated[Sequence[float], 3], lat: float | Sequ
     else:
         raise ValueError(f"Available IRI versions: " + ", ".join(IRI_VERSIONS))
 
+    if (altrange[1] - altrange[0]) / altrange[2] + 1 > 1000:
+        raise ValueError("The specified altitude range and step require more that 1000 points for calculation, "
+                         "which exceeds IRI limitations. Please consider breaking calculation into chunks.")
+
     # Converting parameters to Fortran types
     jmag = False
     iyyyy = c_int(dt.year)
