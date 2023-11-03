@@ -25,7 +25,9 @@ class TestTEC(unittest.TestCase):
                 0,
                 version=20,
             )
-        assert np.all(np.isclose(tecs, test_tecs))
+        print(tecs)
+        print(test_tecs)
+        np.testing.assert_allclose(tecs, test_tecs)
 
     def test_vtec(self):
         ref_tec = np.load('data/vtec_data.npy')
@@ -33,4 +35,4 @@ class TestTEC(unittest.TestCase):
         lat = np.linspace(0, 90, 10)
         lon = np.linspace(0, 180, 10)
         test_tec = iricore.vtec(dt, lat, lon, version=20)
-        assert np.all(np.isclose(ref_tec, test_tec))
+        np.testing.assert_allclose(ref_tec, test_tec)
