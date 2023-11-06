@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iricore"
-version = "1.6.0"
+version = "1.6.1"
 description = "A Python wraper to the Inernational Ionosphere Model"
 authors = ["Vadym Bidula <vadym.bidula@gmail.com>"]
 readme = "README.md"
@@ -12,7 +12,7 @@ include = [
     {path = "src/iricore/*.f90", format = "sdist"},
     {path = "src/iricore/iri2016/*.for", format = "sdist"},
     {path = "src/iricore/iri2020/*.for", format = "sdist"},
-    # Fortran extensions and must be included in the wheel distribution.
+    # Generated binaries must be included in the wheel distribution.
     {path = "iricore/*.so", format = "wheel"},
 ]
 
@@ -26,8 +26,6 @@ pymap3d = { extras = ["core"], version = "^3.0.1" }
 cartopy = "^0.21.1"
 tqdm = "^4.65.0"
 matplotlib = "^3.7.2"
-pandas = "^2.0.3"
-astropy = "^5.3.1"
 jupyter = "^1.0.0"
 
 [tool.poetry.group.build.dependencies]
@@ -39,6 +37,7 @@ sphinx = "^7.0.1"
 sphinx-autodoc-typehints = "^1.23.3"
 future-typing = "^0.4.1"
 sphinxemoji = "^0.2.0"
+sphinx-rtd-theme = "^1.3.0"
 
 [build-system]
 requires = ["scikit-build", "cmake", "poetry-core"]
