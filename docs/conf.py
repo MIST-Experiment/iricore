@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.abspath('../src'))
 
@@ -11,7 +11,7 @@ author = 'Vadym Bidula'
 email = 'vadym.bidula@gmail.com'
 
 # The full version, including alpha/beta/rc tags
-release = '1.5.2'
+release = '1.6.0'
 
 # -- General configuration ---------------------------------------------------
 
@@ -19,6 +19,7 @@ html_static_path = []
 typehints_defaults = 'comma'
 autodoc_typehints = 'description'
 simplify_optional_unions = False
+html_theme = "sphinx_rtd_theme"
 
 extensions = [
     'sphinx.ext.autodoc',
@@ -26,4 +27,6 @@ extensions = [
     'sphinx_autodoc_typehints',
     'sphinxemoji.sphinxemoji',
     # 'sphinxcontrib.bibtex',
+    'sphinx_rtd_theme',
 ]
+
