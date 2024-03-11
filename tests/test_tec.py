@@ -25,8 +25,6 @@ class TestTEC(unittest.TestCase):
                 0,
                 version=20,
             )
-        print(tecs)
-        print(test_tecs)
         np.testing.assert_allclose(tecs, test_tecs)
 
     def test_vtec(self):

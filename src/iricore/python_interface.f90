@@ -31,7 +31,7 @@ subroutine iricore(jf, jmag, glat, glon, gsize, iyyyy, mmdd, dhour, heibeg, heie
   datadir1 = datadir
   call read_ig_rz
   ! TODO: Remove next line later (after applying the fix)
-  call readapf107
+    !  call readapf107
   NITER = SIZE(glat)
 
 
