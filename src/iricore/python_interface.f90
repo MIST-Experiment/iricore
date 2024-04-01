@@ -37,8 +37,10 @@ subroutine iricore(jf, jmag, glat, glon, gsize, iyyyy, mmdd, dhour, heibeg, heie
 
 
   do i = 1, NITER
+      do j = 1, 100
+          oarr(j) = oarr_out(j, i)
+      end do
       call IRI_SUB(jf, jmag, glat(i), glon(i), iyyyy, mmdd, dhour, heibeg, heiend, heistp, outf, oarr, datadir)
-
       do j = 1, 20
         do k = 1, 1000
             outf_out(j, k, i) = outf(j, k)

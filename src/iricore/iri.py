@@ -37,7 +37,7 @@ except OSError:
 
 def iri(dt: datetime, altrange: Annotated[Sequence[float], 3], lat: float | Sequence[float],
         lon: float | Sequence[float], version: Literal[16, 20] = DEFAULT_IRI_VERSION,
-        jf: np.ndarray | str = None) -> IRIOutput:
+        jf: np.ndarray | str = None, **kwargs) -> IRIOutput:
     """
     The main function of the package representing the IRI_SUB routine from the IRI source code. Provides access
     to all IRI calculations through the wide range of parameters.
@@ -53,6 +53,25 @@ def iri(dt: datetime, altrange: Annotated[Sequence[float], 3], lat: float | Sequ
 
     :param jf: Array of JF parameters or string for predefined JF arrays to be used in the IRI_SUB function. See
                :func:`iricore.get_jf` for details. If not specified otherwise, the default IRI JF array will be used.
+    :param kwargs: Use it to enter user input values for the IRI calculation. Names of parameters are
+                   'oarr'+'[oarr index you want to modify]'. Available parameters are:
+
+                   * oarr0 - float - user input for foF2/MHz or NmF2/m-3
+                   * oarr1 - float - user input for hmF2/km or M(3000)F2
+                   * oarr2 - float - user input for foF1/MHz or NmF1/m-3
+                   * oarr3 - float - user input for hmF1/km
+                   * oarr4 - float - user input for foE/MHz or NmE/m-3
+                   * oarr5 - float - user input for hmE/km
+                   * oarr9 - float - user input for B0
+                   * oarr14 - (float, float) - user input for Ne(300km), Ne(400km)/m-3. Use OARR()=-1 if one of these
+                                               values is not available. If jf(23)=.false. then Ne(300km), Ne(550km)/m-3.
+                   * oarr32 - float - user input for Rz12
+                   * oarr34 - float - user input for B1
+                   * oarr38 - float - user input for IG12
+                   * oarr40 - float - user input for daily F10.7 index (make sure to also specify oarr45, otherwise it
+                                      will be copied from oarr40)
+                   * oarr45 - float - user input for 81-day avg F10.7
+
     :return: :class:`IRIOutput` dataclass.
     """
     lat = np.atleast_1d(np.asarray(lat))
@@ -93,6 +112,49 @@ def iri(dt: datetime, altrange: Annotated[Sequence[float], 3], lat: float | Sequ
     oarr_out = np.zeros((100, len(lat)), dtype=np.float32, order="F")
     outf_out = np.zeros((20, 1000, len(lat)), dtype=np.float32, order='F')
 
+    # Handling manual user input
+    if len(kwargs) > 0:
+        if "oarr0" in kwargs.keys():
+            jf[7] = 0
+            oarr_out[0, :] = kwargs["oarr0"]
+        if "oarr1" in kwargs.keys():
+            jf[8] = 0
+            oarr_out[1, :] = kwargs["oarr1"]
+        if "oarr14" in kwargs.keys():
+            jf[9] = 0
+            oarr_out[14, :] = kwargs["oarr14"][0]
+            oarr_out[15, :] = kwargs["oarr14"][1]
+        if "oarr2" in kwargs.keys():
+            jf[12] = 0
+            oarr_out[2, :] = kwargs["oarr2"]
+        if "oarr3" in kwargs.keys():
+            jf[13] = 0
+            oarr_out[3, :] = kwargs["oarr3"]
+        if "oarr4" in kwargs.keys():
+            jf[14] = 0
+            oarr_out[4, :] = kwargs["oarr4"]
+        if "oarr5" in kwargs.keys():
+            jf[15] = 0
+            oarr_out[5, :] = kwargs["oarr5"]
+        if "oarr32" in kwargs.keys():
+            jf[16] = 0
+            oarr_out[32, :] = kwargs["oarr32"]
+        if "oarr40" in kwargs.keys():
+            jf[24] = 0
+            oarr_out[40, :] = kwargs["oarr40"]
+        if "oarr38" in kwargs.keys():
+            jf[26] = 0
+            oarr_out[38, :] = kwargs["oarr38"]
+        if "oarr45" in kwargs.keys():
+            jf[31] = 0
+            oarr_out[45, :] = kwargs["oarr45"]
+        if "oarr9" in kwargs.keys():
+            jf[42] = 0
+            oarr_out[9, :] = kwargs["oarr9"]
+        if "oarr34" in kwargs.keys():
+            jf[43] = 0
+            oarr_out[34, :] = kwargs["oarr34"]
+
     datadir = jpath(_iri_cfd, 'data')
     datadir_bytes = bytes(datadir, 'utf-8')
     # aap, af107, nlines = IRI_DATA
@@ -101,6 +163,7 @@ def iri(dt: datetime, altrange: Annotated[Sequence[float], 3], lat: float | Sequ
     iricore.iricore_(as_ctypes(jf), byref(c_bool(jmag)), glat, glon, byref(gsize),
                      byref(iyyyy), byref(mmdd), byref(dhour),
                      byref(heibeg), byref(heiend), byref(heistp),
+                     # oarr_out.ctypes.data_as(POINTER(c_float)),
                      oarr_out.ctypes.data_as(POINTER(c_float)),
                      outf_out.ctypes.data_as(POINTER(c_float)),
                      datadir_bytes, byref(c_int(len(datadir))),
