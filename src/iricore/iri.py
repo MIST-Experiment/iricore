@@ -90,19 +90,23 @@ def iri(dt: datetime, altrange: Annotated[Sequence[float], 3], lat: float | Sequ
     heibeg = c_float(altrange[0])
     heiend = c_float(altrange[1])
     heistp = c_float(altrange[2])
-    oarr = np.zeros(100, dtype=np.float32, order="F")
-    iri_res = np.zeros((20, 1000, len(lat)), dtype=np.float32, order='F')
+    oarr_out = np.zeros((100, len(lat)), dtype=np.float32, order="F")
+    outf_out = np.zeros((20, 1000, len(lat)), dtype=np.float32, order='F')
 
     datadir = jpath(_iri_cfd, 'data')
     datadir_bytes = bytes(datadir, 'utf-8')
     # aap, af107, nlines = IRI_DATA
 
     # Calling IRI_SUB
-    iricore.iricore_(as_ctypes(jf), byref(c_bool(jmag)), glat, glon, byref(gsize), byref(iyyyy), byref(mmdd),
-                     byref(dhour), byref(heibeg), byref(heiend), byref(heistp), as_ctypes(oarr),
-                     iri_res.ctypes.data_as(POINTER(c_float)), datadir_bytes, byref(c_int(len(datadir))),
+    iricore.iricore_(as_ctypes(jf), byref(c_bool(jmag)), glat, glon, byref(gsize),
+                     byref(iyyyy), byref(mmdd), byref(dhour),
+                     byref(heibeg), byref(heiend), byref(heistp),
+                     oarr_out.ctypes.data_as(POINTER(c_float)),
+                     outf_out.ctypes.data_as(POINTER(c_float)),
+                     datadir_bytes, byref(c_int(len(datadir))),
                      # aap.ctypes.data_as(POINTER(c_float)), af107.ctypes.data_as(POINTER(c_float)), byref(c_int(nlines))
                      )
 
-    iri_res = np.ascontiguousarray(iri_res)
-    return IRIOutput.from_raw(iri_res, lat, lon, altrange)
+    outf_out = np.ascontiguousarray(outf_out)
+    oarr_out = np.ascontiguousarray(oarr_out)
+    return IRIOutput.from_raw(outf_out, oarr_out, lat, lon, altrange)
