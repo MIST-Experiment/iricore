@@ -15,6 +15,7 @@ C 2012.02 01/04/12 COP2D: 99 FOMRAT ',' missing; commented out all WRITEs
 C 2012.03 07/17/14 COP4S: NPLUS=0; PR(13)=0.0 ------------------------- A Shabanloui
 C 2016.01 09/08/16 Main: NEWTON replaced by iteration procedure ------- B Gustavsson
 C 2016.02 05/07/18 Added array PRV11 to DATA statement ---------------- K. Knight
+C 2020.01 03/05/24 SECIPRD: added IMAX=0 at beginning ----------------- I. Alexeyevich
 C****************************************************************************************
 C subroutines for IDC model
 C
@@ -1158,6 +1159,7 @@ C..... Calculate secondary ion production, electron heating rate and 3371 excita
      >             ,.00, 0.0,0.0,0.02/
       DATA IMAX/0/              !.. Initialize IMAX Reset in FLXCAL
 
+      IMAX=0   ! IMAX needs to be initialize at each call to subroutine
       !.. Transfer neutral densities to the density array
       XN(1)=OXN
       XN(2)=O2N

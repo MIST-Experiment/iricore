@@ -245,6 +245,11 @@ C 2020.15 02/19/23 plasmapause fixed at L=5
 C 2020.16 03/18/23 vfjmodelrocstart: array fjm specified 
 C 2020.17 03/23/23 replacing subroutine iri_tec with IRITEC
 C 2020.18 04/27/23 w/o plasmapause (fixpt:5000,10000,20000,30000km)
+C 2020.19 10/22/23 iri_web: added h_tec_min
+C 2020.19 10/22/23 added text if h<HNEA or h>HNEE
+C 2020.20 10/25/23 jf(50)=t/f without/with plasmapause
+C 2020.21 03/04/24 corrected: do 8429 kind=47,57,1.... J. Lilensten
+
 C
 C*****************************************************************
 C********* INTERNATIONAL REFERENCE IONOSPHERE (IRI). *************
@@ -303,7 +308,7 @@ C   28    spread-F probability 	 not computed                        t
 C   29    IRI01-topside          new options as def. by JF(30)       t
 C   30    IRI01-topside corr.    NeQuick topside model   	     false 
 C (29,30) = (t,t) IRIold, (f,t) IRIcor, (f,f) NeQuick, (t,f) IRIcor2
-C   31    B0,B1 ABT-2009	     B0 Gulyaeva-1987 h0.5               t   
+C   31    B0,B1 ABT-2009	     B0 Gulyaeva-1987 h0.5           t
 C (4,31) = (t,t) Bil-00, (f,t) ABT-09, (f,f) Gul-87, (t,f) not used
 C   32    F10.7_81 from file     F10.7_81 - user input (oarr(46))    t
 C   33    Auroral boundary model on/off  true/false	             false
@@ -324,8 +329,7 @@ C   46    not used
 C   47    CGM computation on 	 CGM computation off             false
 C   48    Ti  Tru-2021           Bil-1981                            t
 C   49    Plasmasphere: Ozhogin  Gallagher model                     t
-C      ....
-C   50    
+C   50    without plasmapause	 with plasmapause                    t
 C   ------------------------------------------------------------------
 C
 C  Depending on the jf() settings additional INPUT parameters may 
@@ -485,14 +489,14 @@ c      CHARACTER FILNAM*53
      &   /BLOCK4/HME,NMES,HEF	/BLOCK5/ENIGHT,E
      &   /BLOCK6/HMD,NMD,HDX	/BLOCK7/D1,XKK,FP30,FP3U,FP1,FP2
      & /BLO10/BETA,ETA,DELTA,ZETA /BLO11/B2TOP,itopn,tcor1,tcor2   
-      COMMON /BLO15/hcor2,shc	/findRLAT/FLON,RYEAR
+      COMMON /findRLAT/FLON,RYEAR
      &   /iounit/konsol,mess     /CSW/SW(25),ISW,SWC(25)
      &   /QTOP/Y05,H05TOP,QF,XNETOP,XM3000,HHALF,TAU 
      &   /cotec/hnea,hpp
       EXTERNAL          XE1,XE2,XE3_1,XE4_1,XE5,XE6,FMODIP
 
-      DATA icalls/0/, dplas/100,150,10,10/  
-	  DATA DTE/5.,5.,10.,20.,20./, DTI/5.,5.,10.,20.,20./
+      DATA icalls/0/, dplas/100,150,10,10/,jfirsta,jfirste/0,0/
+      DATA DTE/5.,5.,10.,20.,20./, DTI/5.,5.,10.,20.,20./
 
         save
 ! --- buffer initialization  (Michael Hirsch, SciVision, Inc. ---
@@ -539,7 +543,7 @@ C
         oarr(43)=-1.
         oarr(44)=9999.
         oarr(45)=-1.
-        do 8429 kind=45,57,1
+        do 8429 kind=47,57,1
 8429    	oarr(kind)=-1.
         oarr(49)=-99.
         oarr(53)=-99.
@@ -799,56 +803,71 @@ c lists the selected options before starting the table
 c
       if(icalls.ge.1.or.(.not.mess)) goto 8201
           write(konsol,2911) 
-        if(NODEN) goto 2889
-          if(LAYVER) write(konsol,9012) 
-          if(OLD79) write(konsol,9014) 
-          if (itopn.eq.0) write(konsol,9207)
-          if (itopn.eq.1) write(konsol,9204)
-          if (itopn.eq.2) write(konsol,9205)
-          if (itopn.eq.3) write(konsol,9206)
-          if(FOF2IN) then
-                write(konsol,9015) 
-                goto 2889
-                endif
-        if(URSIF2) then
-                write(konsol,9016) 
-        else
-                write(konsol,9017) 
-        endif
-        if(HMF2IN) write(konsol,9018) 
-        if(fof1in) write(konsol,9019) 
-        if(HMF1IN.and.LAYVER) write(konsol,9021) 
-        if(jf(4)) then
-             write(konsol,9214)
-        else 
-             if (jf(31)) then
-                 write(konsol,9216)
-             else
-                 write(konsol,9215)
+         if(NODEN) goto 2889
+           if(LAYVER) write(konsol,9012)
+           if(jf(49)) then
+             write(konsol,9229)
+           else
+             write(konsol,9228)
+           endif
+           if(jf(50)) then
+             write(konsol,9227)
+           else
+             write(konsol,9226)
+           endif
+           if(OLD79) write(konsol,9014)
+           if (itopn.eq.0) write(konsol,9207)
+           if (itopn.eq.1) write(konsol,9204)
+           if (itopn.eq.2) write(konsol,9205)
+           if (itopn.eq.3) write(konsol,9206)
+           if(FOF2IN) then
+             write(konsol,9015)
+             goto 2889
              endif
-        endif
-        if(foein) write(konsol,9022) 
-        if(HMEIN) write(konsol,9023) 
-        if(B0IN) write(konsol,9923) 
-        if(B1IN) write(konsol,9927) 
-        if(F1_OCPRO) then
-        	write(konsol,9024) 
-        	if(F1_L_COND) write(konsol,9025)
-        	endif
-        if(.not.f1_ocpro.and.f1_l_cond) write(konsol,2917) 
-        if(DREG) then 
-            write(konsol,9026) 
-        else
-            write(konsol,9027) 
-        endif
-        if(jf(26)) then
-            if(fof2in) then 
-                  write(konsol,9028) 
-                  jf(26)=.false.
-            else
-                  write(konsol,9029) 
-            endif
-            endif
+           if(URSIF2) then
+             write(konsol,9016)
+           else
+             write(konsol,9017)
+           endif
+           if(jf(40)) then
+             write(konsol,9717)
+           else
+             write(konsol,9716)
+           endif
+           if(HMF2IN) write(konsol,9018)
+           if(fof1in) write(konsol,9019)
+           if(HMF1IN.and.LAYVER) write(konsol,9021)
+           if(jf(4)) then
+             write(konsol,9214)
+           else
+             if(jf(31)) then
+               write(konsol,9216)
+             else
+               write(konsol,9215)
+             endif
+           endif
+           if(foein) write(konsol,9022)
+           if(HMEIN) write(konsol,9023)
+           if(B0IN) write(konsol,9923)
+           if(B1IN) write(konsol,9927)
+           if(F1_OCPRO) then
+             write(konsol,9024)
+             if(F1_L_COND) write(konsol,9025)
+             endif
+           if(.not.f1_ocpro.and.f1_l_cond) write(konsol,2917)
+           if(DREG) then
+             write(konsol,9026)
+           else
+             write(konsol,9027)
+           endif
+           if(jf(26)) then
+             if(fof2in) then
+               write(konsol,9028)
+               jf(26)=.false.
+             else
+               write(konsol,9029)
+             endif
+           endif
 
 2889    continue
 
@@ -860,23 +879,30 @@ c
           if(jf(23)) then 
             write(konsol,9033) 
           else
-            write(konsol,9034) 
+            if(jf(42)) then
+              write(konsol,9034)
+            else
+              write(konsol,9534)
+            endif
           endif
-
         if(jf(33)) then
             write(konsol,4031)
         else
             write(konsol,4032)
         endif
-
         if(jf(35)) then
             write(konsol,9128)
         else
             write(konsol,9129)
         endif
+        if(jf(48)) then
+            write(konsol,9333)
+        else
+            write(konsol,9335)
+        endif
 
 2911    format('*** IRI parameters are being calculated ***')
-9012    format('Ne, E-F: The LAY-Version is prelimenary.',
+9012    format('Ne: The LAY-Version is prelimenary.',
      &          ' Erroneous profile features can occur.')
 9014    format('Ne: No upper limit for F10.7 in',
      &          ' topside formula.')
@@ -884,34 +910,43 @@ c
 9205    format('Ne: NeQuick for Topside')
 9206    format('Ne: IRI-cor2 for Topside')
 9207    format('Ne: IRI-2001 for Topside')
-9214    format('Ne: B0,B1 Bil-2000')
-9215    format('Ne: B0 Gul-1987')
-9216    format('Ne: B0,B1-ABT-2009')
-9015    format('Ne, foF2/NmF2: provided by user.')
-9016    format('Ne, foF2: URSI model is used.')
-9017    format('Ne, foF2: CCIR model is used.')
-9018    format('Ne, hmF2/M3000F2: provided by user.')
-9019    format('Ne, foF1/NmF1: provided by user.')
-9021    format('Ne, hmF1: provided by user.')
-9022    format('Ne, foE/NmE: provided by user.')
-9023    format('Ne, hmE: provided by user.')
-9923    format('Ne, B0: provided by user.')
-9927    format('Ne, B1: provided by user.')
-9024    format('Ne, foF1: probability function used.')
-9025    format('Ne, foF1: L condition cases included.')
-2917    format('Ne, foF1: w/o F1 layer.')
-9026    format('Ne, D: IRI1990')
-9027    format('Ne, D: FT2001; IRI-90, FT-01, DRS-95)')
-9028    format('Ne, foF2: Storm model turned off if foF2 or',
+9214    format('Ne: Bil-2000 for B0 and B1')
+9215    format('Ne: Gul-1987 for B0')
+9216    format('Ne: ABT-2009 for B0 and B1')
+9015    format('Ne: foF2 or NmF2 provided by user')
+9016    format('Ne: URSI-1989 model for foF2')
+9017    format('Ne: CCIR-1967 model for foF2')
+9716    format('Ne: Shubin-2015 model for hmF2')
+9717    format('Ne: AMBT-2012 model for hmF2')
+9018    format('Ne: hmF2 or M3000F2 provided by user')
+9019    format('Ne: foF1 or NmF1 provided by user')
+9021    format('Ne: hmF1 provided by user')
+9022    format('Ne: foE or NmE provided by user')
+9023    format('Ne: hmE provided by user')
+9923    format('Ne: B0 provided by user')
+9927    format('Ne: B1 provided by user')
+9024    format('Ne: foF1 probability function used')
+9025    format('Ne: foF1 L condition cases included')
+2917    format('Ne: profile without F1 layer')
+9026    format('Ne: IRI1990 is used for D region')
+9027    format('Ne: IRI-1990, FT-2001, DRS-1995 available for D region')
+9028    format('Ne: Storm model is turned off if foF2 or',
      &          ' NmF2 user input')
-9029    format('Ne, foF2: storm model included')
-9128    format('Ne, foE: storm model on')
-9129    format('Ne, foE: storm model off')
-9039    format('Ion Com.: DS-95 & DY-85')
-9031    format('Ion Com.: RBV-10 & TBT-15')
-9032    format('Te: Temperature-density correlation is used.')
-9033    format('Te: Aeros/AE/ISIS model')
-9034    format('Te: TBT-2012 model')
+9029    format('Ne: foF2 storm model included')
+9128    format('Ne: foE storm model included')
+9229    format('Ne: OTSR2012 for plasmasphere')
+9228    format('Ne: GCC-2000 for plasmasphere')
+9227    format('Ne: profile without plasmapause')
+9226    format('Ne: profile with plasmapause')
+9129    format('Ne: foE storm model turned off')
+9039    format('Ion Comp.: DS-1995 below 300km and DY-1985 above')
+9031    format('Ion Comp.: RBV-2010 below 300km and TBT-2015 above')
+9032    format('Te: Temperature-density correlation is used')
+9033    format('Te: Bil-1985 model is used')
+9034    format('Te: TBT-2012 with PF10.7 depend. is used')
+9534    format('Te: TBT-2012 without PF10.7 depend. is used')
+9333    format('Ti: TBK-2012 model is used')
+9335    format('Ti: Bil-1981 model is used')
 4031    format('Auroral boundary model on')
 4032    format('Auroral boundary model off')
 
@@ -1549,109 +1584,128 @@ c
       endif
 
 c
-c Plasmapause height hpp for plasmapause fixed at L=5 and
-c calculated assuming a dipole magnetic field
-c 
-c        xlpp=5.0
-c        xlpp=5.0
-		ppmlat=mlat
-		ppb=60.0
-		if(abs(ppmlat).gt.ppb) ppmlat=sign(ppb,ppmlat)
-		cosmag=cos(ppmlat*umr)
-		cosmag2=cosmag*cosmag
-c        hpp=ERA*(xlpp*cosmag2-1.0)
-        hpp=10000.0
-		xlpp=(1.0+hpp/ERA)/cosmag2
-c
-c Parameters for TCOR1 and TCOR2 calculation for IRI2001cor
-C and IRI-TCOR2  
+c Calculation of parameters for 2001cor and COR2 topside
+c and extension to plasmasphere
 c
       TCOR1=0.0
-	  TCOR2=0.0
+      TCOR2=0.0
       if(itopn.eq.1.or.itopn.eq.3) then
-          zmp111 = EPLA(modip,10.0,0.0)
-          zmp222 = EPLA(modip,19.0,0.0) 
-          r2n = -0.84 - 1.6 * zmp111  
-          r2d = -0.84 - 0.64 * zmp111 
-          x1n = 230. - 700. * zmp222  
-          x1d = 550. - 1900. * zmp222
-          r2 = HPOL(HOUR,r2d,r2n,SAX300,SUX300,1.,1.)
-          x1 = HPOL(HOUR,x1d,x1n,SAX300,SUX300,1.,1.)
-          hcor1 = hmF2 + x1
-          x12 = 1500. - x1
-	      tc3 = r2 / x12
-		  hcor2 = (hcor1 + hmF2)/2.0
-		  shc = (hcor2-hmF2) / alog(2.0)
+        zmp111 = EPLA(modip,10.0,0.0)
+        zmp222 = EPLA(modip,19.0,0.0)
+        r2n = -0.84 - 1.60 * zmp111
+        r2d = -0.84 - 0.64 * zmp111
+        x1n = 230. -  700. * zmp222
+        x1d = 550. - 1900. * zmp222
+        r2 = HPOL(HOUR,r2d,r2n,SAX300,SUX300,1.,1.)
+        x1 = HPOL(HOUR,x1d,x1n,SAX300,SUX300,1.,1.)
+        hcor1 = hmF2 + x1
+        x12 = 1500. - x1
+        tc3 = r2 / x12
+        hcor2 = (hcor1 + hmF2)/2.0
+        shc = (hcor2-hmF2) / alog(2.0)
 c
-c plasmasphere profile parameters .............................
-c plasmapause outer boundary fixed at L=5.1 
-c (inner boundary at L=5)
+c Assuming a dipole magnetic field for |maglat|<60 degrees.
+c The L-value is related to height h by L = (1 + h/ERA)/(cos(maglat)^2.
 c
-c          xlppo=5.1		
+        ppmlat=mlat
+        ppb=60.0
+        if(abs(ppmlat).gt.ppb) ppmlat=sign(ppb,ppmlat)
+        cosmag=cos(ppmlat*umr)
+        cosmag2=cosmag*cosmag
+
 c
-c calculate height of outer boundary of plasmapause (hppo) and 
-c L-values at mid point below and above plasmapause (xlmid and 
-c xlpt) assuming a dipole magnetic field
-c 
-c        hppo=ERA*(xlppo*cosmag2-1.0)
-c        hmid=(hpp+hmF2+1500.0)/2.0
-        hmid=5000.0
-c        hpt=2*hpp-hmid
-        hppo=20000.0
-        hpt=30000.0
-		xlmid=(1.0+hmid/ERA)/cosmag2
-		xlpt=(1.0+hpt/ERA)/cosmag2
-		xlppo=(1.0+hppo/ERA)/cosmag2
+c Version without Plasmapause (fixpt:5000,10000,20000,30000km)
+c
+
+        if(jf(50)) then
+          hmid=5000.0
+          hpp =10000.0
+          hppo=20000.0
+          hpt =30000.0
+          xlmid=(1.0+hmid/ERA)/cosmag2
+          xlpp =(1.0+hpp/ERA)/cosmag2
+          xlppo=(1.0+hppo/ERA)/cosmag2
+          xlpt =(1.0+hpt/ERA)/cosmag2
+        else
+
+c
+c Version with Plasmapause:
+c Plasmapause inner/outer boundary fixed at L=5/5.1
+c
+
+          xlpp =5.0
+          xlppo=5.1
+          hpp =ERA*(xlpp*cosmag2-1.0)
+          hppo=ERA*(xlppo*cosmag2-1.0)
+          hmid=(hpp+hmF2+1500.0)/2.0
+          hpt=2*hpp-hmid
+          xlmid=(1.0+hmid/ERA)/cosmag2
+          xlpt =(1.0+hpt/ERA)/cosmag2
+        endif
+
 c		
 c plasmasphere models (Gallagher-2000, Ohzogin-2012)
 c		
+
         if(jf(49)) then
-		  xnepp=ohzden(xlpp,ppmlat)
-		  xnemid=ohzden(xlmid,ppmlat)
-		  xneppo=ohzden(xlppo,ppmlat)
-		  xnept=ohzden(xlpt,ppmlat)
+          xnepp =ohzden(xlpp,ppmlat)
+          xnemid=ohzden(xlmid,ppmlat)
+          xneppo=ohzden(xlppo,ppmlat)
+          xnept =ohzden(xlpt,ppmlat)
         else
-		  xnepp=gallden(xlpp,daynr,rssn)
-		  xnemid=gallden(xlmid,daynr,rssn)
-		  xneppo=gallden(xlppo,daynr,rssn)
-		  xnept=gallden(xlpt,daynr,rssn)
-       endif
-c		xnepp1=xnepp/10.0
-c        xneppo=caadenet(xlppo,xmlt)
-c        xnept=caadenet(xlpt,xmlt)
+          xnepp =gallden(xlpp,daynr,rssn)
+          xnemid=gallden(xlmid,daynr,rssn)
+          xneppo=gallden(xlppo,daynr,rssn)
+          xnept =gallden(xlpt,daynr,rssn)
+        endif
+
+c
+c Version with Plasmapause:
+c Density decrease by 10 at plasmapause or use
+c Carpenter & Anderson (1992) for extended plasma trough
+c
+
+        if(.not.jf(50)) then
+          xneppo=xnepp/10.0
+c          xneppo=caadenet(xlppo,xmlt)
+          xnept=caadenet(xlpt,xmlt)
+          endif
+
 c		
 c Booker parameters for plasmaspheric extension
 c		
         PAH(1)=hcor1
-        PAH(2)=hmf2+1500.0
+        PAH(2)=hmF2 + 1500.0
         PAH(3)=hmid		
         PAH(4)=hpp
         PAH(5)=hppo
-        PAH(6)=hpt      ! 2*hpp-hmid
+        PAH(6)=hpt
         PALOGNE(1)=0.0
         PALOGNE(2)=r2*alg10
         PALOGNE(3)=log(xnemid/nmf2s)
         PALOGNE(4)=log(xnepp/nmf2s)
         PALOGNE(5)=log(xneppo/nmf2s)
         PALOGNE(6)=log(xnept/nmf2s)
-          tcor1=0.0        
+
+        tcor1=0.0
         CALL SOCO(daynr,HOUR,LATI,LONGI,hmid,SUC,zxz,sap,sup)
-		   TCOR2 = TCOR2CAL(hmid,hmF2,hour,modip,pf107,sap,sup)
-		   znemid = log(XE_1(hmid)/nmf2s)
-           palogne(3)=palogne(3)-znemid
+        TCOR2 = TCOR2CAL(hmid,hour,modip,pf107,sap,sup)
+        znemid = log(XE_1(hmid)/nmf2s)
+        palogne(3)=palogne(3)-znemid
         CALL SOCO(daynr,HOUR,LATI,LONGI,hpp,SUC,zxz,sap,sup)
-		   TCOR2 = TCOR2CAL(hpp,hmF2,hour,modip,pf107,sap,sup)
- 		   znepp = log(XE_1(hpp)/nmf2s)
-           palogne(4)=palogne(4)-znepp
+        TCOR2 = TCOR2CAL(hpp,hour,modip,pf107,sap,sup)
+        znepp = log(XE_1(hpp)/nmf2s)
+        palogne(4)=palogne(4)-znepp
         CALL SOCO(daynr,HOUR,LATI,LONGI,hppo,SUC,zxz,sap,sup)
-		   TCOR2 = TCOR2CAL(hppo,hmF2,hour,modip,pf107,sap,sup)
- 		   zneppo = log(XE_1(hppo)/nmf2s)
-           palogne(5)=palogne(5)-zneppo
+        TCOR2 = TCOR2CAL(hppo,hour,modip,pf107,sap,sup)
+        zneppo = log(XE_1(hppo)/nmf2s)
+        palogne(5)=palogne(5)-zneppo
         CALL SOCO(daynr,HOUR,LATI,LONGI,hpt,SUC,zxz,sap,sup)
-		   TCOR2 = TCOR2CAL(hpt,hmF2,hour,modip,pf107,sap,sup)
- 		   znept = log(XE_1(hpt)/nmf2s)
-           palogne(6)=palogne(6)-znept
-		endif
+        TCOR2 = TCOR2CAL(hpt,hour,modip,pf107,sap,sup)
+        znept = log(XE_1(hpt)/nmf2s)
+        palogne(6)=palogne(6)-znept
+      endif
+
 c
 c Bottomside thickness parameter B0 and shape parameters B1
 c                              
@@ -2176,42 +2230,38 @@ C
 
         height=heibeg
         kk=1
-		xinv=0.0
-c        jfirsta=0
-c        jfirste=0
-        jfirsta=1
-        jfirste=1
-
+	xinv=0.0
 
 300   CALL SOCO(daynr,HOUR,LATI,LONGI,height,SUNDEC,XHI,SAX,SUX)
-c no longer calculating invdip for each height
-c       	call igrf_sub(lati,longi,ryear,height,fl,icode,dipl,babs)
-c        	if(fl.gt.10.) fl=10.
-c      		invdip=INVDPC(FL,DIMO,BABS,DIPL)
-c			yinv=invdip-xinv
-c      		invdip_old=INVDPC_OLD(FL,DIMO,BABS,DIPL)
-c           if(height.eq.heibeg) xinv=invdip
 
-	  IF(NODEN) GOTO 330
+c no longer calculating invdip for each height
+c       call igrf_sub(lati,longi,ryear,height,fl,icode,dipl,babs)
+c       if(fl.gt.10.) fl=10.
+c      	invdip=INVDPC(FL,DIMO,BABS,DIPL)
+c	yinv=invdip-xinv
+c      	invdip_old=INVDPC_OLD(FL,DIMO,BABS,DIPL)
+c       if(height.eq.heibeg) xinv=invdip
+
 
 c
 c electron density ELEDE in m-3 in outf(1,*)
 c
-      IF(HEIGHT.LT.HNEA) then
-	     if(mess.and.(jfirsta.lt.1)) 
-     &	    write(konsol,2920) hnea
-2920     format(/'At heights below ',F4.1,'km Ne is ',  
+      elede=-1.0
+      IF(NODEN) GOTO 330
+      IF(HEIGHT.LT.HNEA.and.(jfirsta.lt.1)) then
+        if(mess) write(konsol,2920) hnea
+2920    format(/'At heights below ',F4.1,' km Ne is ',
      &    'negligible and IRI vaues are not calculated.')
-         jfirsta=1
-		 GOTO 330
-		 endif
-      IF(HEIGHT.GT.HNEE) then
-	     if(mess.and.(jfirste.lt.1)) 
-     &	    write(konsol,2919) hnee
-2919     format(/'At heights above ',F6.1,'km a first-',
+        jfirsta=2
+        GOTO 330
+        endif
+      IF(HEIGHT.GT.HNEE.and.(jfirste.lt.1)) then
+	if(mess) write(konsol,2919) hnee
+2919    format(/'At heights above ',F6.1,' km a first-',
      &    'order plasmaspheric extension is applied.')
-         jfirste=1
-		 endif
+        jfirste=2
+        endif
+
       IF(LAYVER) THEN
           ELEDE=-9.
           IF(IIQU.LT.2) ELEDE=
@@ -2221,26 +2271,21 @@ c
           endif
 
 c
-c Calculates height-dependent correction factors for topside options
-c 2001cor and COR2
+c Calculates height-dependent correction factors for tcor1 and tcor2
+c for topside options 2001cor and COR2
 c
 		 
       IF(itopn.eq.1.or.itopn.eq.3) then             
-	    tcor1 = 0.0
-	    IF(height.lt.hcor1) goto 2319	  
-c        IF(jf(46)) then
-c	      xred = height - hcor1
-c		  rco = tc3 * xred
-c		  tcor1 = rco * alg10
-c		else
-		  tcor1 = BOOKER(height,6,pah,palogne,dplas)
-c        endif
+	tcor1 = 0.0
+	IF(height.ge.hcor1) tcor1 =
+     &    BOOKER(height,6,pah,palogne,dplas)
 
-2319    tcor2 = 0.0
-        if(itopn.eq.3.and.height.gt.hmf2) then	  
+        tcor2 = 0.0
+        if(itopn.eq.3.and.height.gt.hmF2) then
           CALL SOCO(daynr,HOUR,LATI,LONGI,height,SUC,zxz,sap,sup)
-	      tcor2 = TCOR2CAL(height,hmF2,hour,modip,pf107,sap,sup)
-		  endif	
+          tcor2 = TCOR2CAL(height,hour,modip,pf107,sap,sup)
+          if(height.lt.hcor2) tcor2=(exp((h-hmF2)/shc)-1)*tcor2
+          endif
         endif
 		
       ELEDE=XE_1(HEIGHT)
@@ -2276,78 +2321,77 @@ c
       
       TEH=TNH
       if(HEIGHT.GT.HEQUI) TEH=BOOKER1(HEIGHT,5,ATE1,AHH,STTE,DTE)
-
-c Tn < Ti < Te enforced  
+c
+c Tn < Ti < Te enforced
+c
       if(TIH.lt.TNH) TIH=TNH
-	  if(TEH.lt.TNH) TEH=TNH
-	  if(TIH.gt.TEH) TIH=TEH
+      if(TEH.lt.TNH) TEH=TNH
+      if(TIH.gt.TEH) TIH=TEH
 
-        OUTF(2,kk)=TNH
-        OUTF(3,kk)=TIH
-        OUTF(4,kk)=TEH
+      OUTF(2,kk)=TNH
+      OUTF(3,kk)=TIH
+      OUTF(4,kk)=TEH
 
 c
 c ion composition
 c
 7108  IF(NOION) GOTO 7118
       IF((HEIGHT.GT.HNIE).OR.(HEIGHT.LT.HNIA)) GOTO 7118
-
-            ROX=-1.
-            RHX=-1.
-            RNX=-1.
-            RHEX=-1.
-            RNOX=-1.
-            RO2X=-1.
-            RCLUST=-1.
+      ROX=-1.
+      RHX=-1.
+      RNX=-1.
+      RHEX=-1.
+      RNOX=-1.
+      RO2X=-1.
+      RCLUST=-1.
       if(RBTT) then
         if (height.ge.300.) then
 c Triskova-Truhlik-Smilauer-2003 model
-			call igrf_sub(lati,longi,ryear,height,fl,icode,dipl,babs)
-			if(fl.gt.10.) fl=10.
-      		invdip=INVDPC(FL,DIMO,BABS,DIPL)
-			call CALION(invdip,xmlt,height,daynr,pf107obs,
-     &  	   xic_O,xic_H,xic_He,xic_N)
-       		rox=xic_O*100.
-        	rhx=xic_H*100.
-        	rnx=xic_N*100.
-        	rhex=xic_He*100.
-        	rnox=0.
-        	ro2x=0.
+          call igrf_sub(lati,longi,ryear,height,fl,icode,dipl,babs)
+          if(fl.gt.10.) fl=10.
+          invdip=INVDPC(FL,DIMO,BABS,DIPL)
+          call CALION(invdip,xmlt,height,daynr,pf107obs,
+     &      xic_O,xic_H,xic_He,xic_N)
+          rox=xic_O*100.
+          rhx=xic_H*100.
+          rnx=xic_N*100.
+          rhex=xic_He*100.
+          rnox=0.
+          ro2x=0.
         else
 c Richards-Bilitza-Voglozin-2010 IDC model
-            CALL GTD7(IYD,SEC,height,lati,longi,HOUR,f10781obs,
-     &        f107yobs,IAPO,48,D_MSIS,T_MSIS)
-			XN4S = 0.5 * D_MSIS(8)
-			EDENS=ELEDE/1.e6
-			jprint=1
-			if(jf(38)) jprint=0
-			Den_NO = 0.0
-			rn = 0.0
-            CALL CHEMION(jprint,height,F107YOBS,F10781OBS,TEH,TIH,
-     &       	TNH,D_MSIS(2),D_MSIS(4),D_MSIS(3),D_MSIS(1),
-     &       	D_MSIS(7),-1.0,XN4S,EDENS,-1.0,xhi,ro,ro2,rno,rn2,
-     &          rn,Den_NO,Den_N2D,INEWT)                              
-			if(INEWT.gt.0) then
-				sumion = edens/100.
-        		rox=ro/sumion
-        	    rhx=0.
-        	    rhex=0.
-        		rnx=rn/sumion
-        		rnox=rno/sumion
-        		ro2x=ro2/sumion
-        		endif
-        endif
+          CALL GTD7(IYD,SEC,height,lati,longi,HOUR,f10781obs,
+     &      f107yobs,IAPO,48,D_MSIS,T_MSIS)
+          XN4S = 0.5 * D_MSIS(8)
+          EDENS=ELEDE/1.e6
+          jprint=1
+          if(jf(38)) jprint=0
+          Den_NO = 0.0
+          rn = 0.0
+          CALL CHEMION(jprint,height,F107YOBS,F10781OBS,TEH,TIH,
+     &      TNH,D_MSIS(2),D_MSIS(4),D_MSIS(3),D_MSIS(1),
+     &      D_MSIS(7),-1.0,XN4S,EDENS,-1.0,xhi,ro,ro2,rno,rn2,
+     &      rn,Den_NO,Den_N2D,INEWT)
+          if(INEWT.gt.0) then
+            sumion = edens/100.
+            rox=ro/sumion
+            rhx=0.
+            rhex=0.
+            rnx=rn/sumion
+            rnox=rno/sumion
+            ro2x=ro2/sumion
+            endif
+          endif
       else
-c Danilov-Smirnova-1995 model and Danilov-Yaichnikov-1985 model (upper)
-            call iondani(iday,iseamon,height,xhi,
-     &            lati,f107365,dion)
-            ROX=DION(1)
-            RHX=DION(2)
-            RNX=DION(3)
-            RHEX=DION(4)
-            RNOX=DION(5)
-            RO2X=DION(6)
-            RCLUST=DION(7)
+c Danilov-Smirnova-1995 model below 300km and Danilov-Yaichnikov-1985 model above
+        call iondani(iday,iseamon,height,xhi,lati,f107365,dion)
+        ROX=DION(1)
+        RHX=DION(2)
+        RNX=DION(3)
+        RHEX=DION(4)
+        RNOX=DION(5)
+        RO2X=DION(6)
+        RCLUST=DION(7)
       endif
 c
 c ion densities are given in percent of total electron density;
@@ -2366,9 +2410,9 @@ c
       OUTF(10,kk)=RCLUST*xnorm
       OUTF(11,kk)=RNX*xnorm
 
-7118    height=height+heistp
-        kk=kk+1
-        if(kk.le.numhei) goto 300
+7118  height=height+heistp
+      kk=kk+1
+      if(kk.le.numhei) goto 300
 
 C
 C END OF PARAMETER COMPUTATION LOOP 
@@ -2385,20 +2429,20 @@ c outf(14,67:77)= with SW=0,WA=1,
 c
 
       if(.not.dreg) then
-            do ii=1,11
-                  Htemp=55+ii*5  
-                  outf(14,ii)=-1.     
-                  if(Htemp.ge.65.) outf(14,ii)=XE6(Htemp)     
-                  outf(14,11+ii)=-1.
-                  call F00(Htemp,LATI,DAYNR,XHI1,F107D,EDENS,IERROR)
-                  if(ierror.eq.0.or.ierror.eq.2) outf(14,11+ii)=edens
-                  outf(14,22+ii)=ddens(1,ii)      
-                  outf(14,33+ii)=ddens(2,ii)      
-                  outf(14,44+ii)=ddens(3,ii)      
-                  outf(14,55+ii)=ddens(4,ii)      
-                  outf(14,66+ii)=ddens(5,ii)      
-                  enddo
-            endif
+        do ii=1,11
+          Htemp=55+ii*5
+          outf(14,ii)=-1.
+          if(Htemp.ge.65.) outf(14,ii)=XE6(Htemp)
+          outf(14,11+ii)=-1.
+          call F00(Htemp,LATI,DAYNR,XHI1,F107D,EDENS,IERROR)
+          if(ierror.eq.0.or.ierror.eq.2) outf(14,11+ii)=edens
+          outf(14,22+ii)=ddens(1,ii)
+          outf(14,33+ii)=ddens(2,ii)
+          outf(14,44+ii)=ddens(3,ii)
+          outf(14,55+ii)=ddens(4,ii)
+          outf(14,66+ii)=ddens(5,ii)
+          enddo
+        endif
 
 c
 c equatorial vertical ion drift
@@ -2406,13 +2450,16 @@ c
 
       drift=-1.
       if(jf(21).and.abs(magbr).lt.25.0) then
-c            param(1)=daynr
-c            param(2)=f107d
-c            call vdrift(hour,longi,param,drift)
-      CALL vfjmodelrocstart(FJM)
-      CALL vfjmodelrocinit(F107D,DAYNR,JSEA,JF107)
-      CALL vfjmodelroc(FJM,HOUR,LONGI,JSEA,JF107,DRIFT)
-            endif
+c
+c old drift model of Scherliess & Fejer (1999)
+c      param(1)=daynr
+c      param(2)=f107d
+c      call vdrift(hour,longi,param,drift)
+c
+        CALL vfjmodelrocstart(FJM)
+        CALL vfjmodelrocinit(F107D,DAYNR,JSEA,JF107)
+        CALL vfjmodelroc(FJM,HOUR,LONGI,JSEA,JF107,DRIFT)
+        endif
 
 c
 c spread-F occurrence probability
@@ -2421,16 +2468,16 @@ c
       if(.not.jf(28)) goto 1937
       if(hour.gt.7.25.and.hour.lt.17.75) goto 1937
       if(abs(lati).gt.25.0) goto 1937
-			spfhour=hour
-			daynr1=daynr
-			if(hour.lt.12.0) then
-				spfhour=hour+24.0
-				daynr1=daynr-1
-				if(daynr1.lt.1) daynr1=idayy
-            	endif
-            call spreadf_brazil(daynr,idayy,f107d,lati,osfbr)
-			ispf=int((spfhour-17.75)/0.5)+1
- 			if(ispf.gt.0.and.ispf.lt.26) spreadf=osfbr(ispf)
+        spfhour=hour
+        daynr1=daynr
+        if(hour.lt.12.0) then
+          spfhour=hour+24.0
+          daynr1=daynr-1
+          if(daynr1.lt.1) daynr1=idayy
+          endif
+        call spreadf_brazil(daynr,idayy,f107d,lati,osfbr)
+        ispf=int((spfhour-17.75)/0.5)+1
+        if(ispf.gt.0.and.ispf.lt.26) spreadf=osfbr(ispf)
 1937   continue
 
 C
@@ -2438,7 +2485,7 @@ C ADDITIONAL PARAMETER FIELD OARR: angles are given in degrees,
 C times in decimal hours, altitudes in km, densities in m-3, and
 C temperatures in K      
 C
-        IF(NODEN) GOTO 6192
+      IF(NODEN) GOTO 6192
       OARR(1)=NMF2S		! F2-peak density in m-3
       OARR(2)=HMF2		! F2-peak height in km
       if(f1reg) OARR(3)=NMF1
@@ -2515,8 +2562,8 @@ c include only every second auroral boundary point (MLT=0,1,2..23)
       OARR(86)=dimo		! Earth's dipole moment
       OARR(87)=SAX300	! sunrise at 300km in decimal hours
       OARR(88)=SUX300	! sunset at 300km in decimal hours		
-      OARR(89)=HNEA		! lower boundary in km of IRI profile		
-      OARR(90)=HNEE		! upper boundary in km of IRI profile		
+      OARR(89)=HNEA	! lower boundary in km of Ne valid range
+      OARR(90)=HNEE	! upper boundary in km of Ne valid range
 
 3330  CONTINUE
 

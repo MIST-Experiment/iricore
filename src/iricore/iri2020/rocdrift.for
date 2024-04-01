@@ -39,7 +39,10 @@ c        CALL vfjmodelrocinit( f107, idoy )
 c    3) retrieve vertical drift parsing hour and geographic longitude
 c        CALL vfjmodelroc(ttl,gglon,viv)
 c
-c 2020.10 04/30/22 added subroutine arguments to incop. into IRI 
+c ----------------------------------------------------------------
+c CHANGES:
+c-Version-MM/DD/YY-Description (person reporting correction)
+c 2020.10 04/30/22 added subroutine arguments to incop. into IRI
 c 2020.10 04/30/22 deleted blanks in main data statement 
 c 2020.10 04/30/22 included fjrocdata.h in vfjmodelrocstart  
 c
