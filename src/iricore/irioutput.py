@@ -37,6 +37,7 @@ class IRIOutput:
     :param oarr: Additional output data. First index axis corresponds to different coordinates, for example,
                  oarr[0] will correspond to lat[0] and lon[0] and so on. The second index axis has size 100 and maps
                  the extra output information. If only one coordinate was calculated, the first axis is discarded.
+
                         * oarr[0] = NMF2/M-3
                         * oarr[1] = HMF2/KM
                         * oarr[2] = NMF1/M-3
