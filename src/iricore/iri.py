@@ -56,23 +56,23 @@ def iri(dt: datetime, altrange: Annotated[Sequence[float], 3], lat: float | Sequ
     :param kwargs: Use it to enter user input values for the IRI calculation. Names of parameters are
                    'oarr'+'[oarr index you want to modify]'. Available parameters are:
 
-                   * oarr0 - float - user input for foF2/MHz or NmF2/m-3
-                   * oarr1 - float - user input for hmF2/km or M(3000)F2
-                   * oarr2 - float - user input for foF1/MHz or NmF1/m-3
-                   * oarr3 - float - user input for hmF1/km
-                   * oarr4 - float - user input for foE/MHz or NmE/m-3
-                   * oarr5 - float - user input for hmE/km
-                   * oarr9 - float - user input for B0
-                   * oarr14 - (float, float) - user input for Ne(300km), Ne(400km)/m-3. Use OARR()=-1 if one of these
-                                               values is not available. If jf(23)=.false. then Ne(300km), Ne(550km)/m-3.
-                   * oarr32 - float - user input for Rz12
-                   * oarr34 - float - user input for B1
-                   * oarr38 - float - user input for IG12
-                   * oarr40 - float - user input for daily F10.7 index (make sure to also specify oarr45, otherwise it
-                                      will be copied from oarr40)
-                   * oarr45 - float - user input for 81-day avg F10.7
+                   * **oarr0** - float - user input for foF2/MHz or NmF2/m-3
+                   * **oarr1** - float - user input for hmF2/km or M(3000)F2
+                   * **oarr2** - float - user input for foF1/MHz or NmF1/m-3
+                   * **oarr3** - float - user input for hmF1/km
+                   * **oarr4** - float - user input for foE/MHz or NmE/m-3
+                   * **oarr5** - float - user input for hmE/km
+                   * **oarr9** - float - user input for B0
+                   * **oarr14** - (float, float) - user input for Ne(300km), Ne(400km)/m-3. Use oarr14[...]=-1 if one of
+                     these values is not available. If jf(22)==False then Ne(300km), Ne(550km)/m-3.
+                   * **oarr32** - float - user input for Rz12
+                   * **oarr34** - float - user input for B1
+                   * **oarr38** - float - user input for IG12
+                   * **oarr40** - float - user input for daily F10.7 index (make sure to also specify oarr45, otherwise it
+                     will be copied from oarr40)
+                   * **oarr45** - float - user input for 81-day avg F10.7
 
-    :return: :class:`IRIOutput` dataclass.
+    :return: :class:`iricore.IRIOutput` dataclass.
     """
     lat = np.atleast_1d(np.asarray(lat))
     lon = np.atleast_1d(np.asarray(lon))

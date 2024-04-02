@@ -30,3 +30,4 @@ Contents
     installation
     user_guide
     reference
+    release_notes

@@ -34,7 +34,7 @@ class IRIOutput:
                         * [55:65] weak Winter Anomaly (WA=0.5) conditions;
                         * [44:54] for major Stratospheric Warming (SW=1);
                         * [66:76] strong Winter Anomaly (WA=1) conditions.
-    :param oarr: Additional output parameters. First index axis corresponds to different coordinates, for example,
+    :param oarr: Additional output data. First index axis corresponds to different coordinates, for example,
                  oarr[0] will correspond to lat[0] and lon[0] and so on. The second index axis has size 100 and maps
                  the extra output information. If only one coordinate was calculated, the first axis is discarded.
                         * oarr[0] = NMF2/M-3
