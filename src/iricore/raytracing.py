@@ -1,4 +1,7 @@
 # A simple 2D raytracing. Code copied from dionpy
+
+from __future__ import annotations
+
 import datetime
 from typing import Tuple
 
