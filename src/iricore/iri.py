@@ -12,12 +12,13 @@ from numpy.ctypeslib import as_ctypes
 from .config import IRI_VERSIONS, DEFAULT_IRI_VERSION
 from .iri_flags import get_jf
 from .irioutput import IRIOutput
+from .read_iri_data import readapf107
 
 _iri_cfd = os.path.dirname(os.path.abspath(__file__))
 
 # TODO: Fix data reading from Python
 # TODO: Check if data works for all files
-# IRI_DATA = readapf107()
+_APF107_DATA = readapf107()
 
 try:
     iri2016 = np.ctypeslib.load_library("libiri2016", _iri_cfd)
@@ -157,7 +158,7 @@ def iri(dt: datetime, altrange: Annotated[Sequence[float], 3], lat: float | Sequ
 
     datadir = jpath(_iri_cfd, 'data')
     datadir_bytes = bytes(datadir, 'utf-8')
-    # aap, af107, nlines = IRI_DATA
+    aap, af107, nlines = _APF107_DATA
 
     # Calling IRI_SUB
     iricore.iricore_(as_ctypes(jf), byref(c_bool(jmag)), glat, glon, byref(gsize),
@@ -167,7 +168,7 @@ def iri(dt: datetime, altrange: Annotated[Sequence[float], 3], lat: float | Sequ
                      oarr_out.ctypes.data_as(POINTER(c_float)),
                      outf_out.ctypes.data_as(POINTER(c_float)),
                      datadir_bytes, byref(c_int(len(datadir))),
-                     # aap.ctypes.data_as(POINTER(c_float)), af107.ctypes.data_as(POINTER(c_float)), byref(c_int(nlines))
+                     aap.ctypes.data_as(POINTER(c_float)), af107.ctypes.data_as(POINTER(c_float)), byref(c_int(nlines))
                      )
 
     outf_out = np.ascontiguousarray(outf_out)

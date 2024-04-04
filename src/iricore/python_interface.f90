@@ -1,6 +1,6 @@
 subroutine iricore(jf, jmag, glat, glon, gsize, iyyyy, mmdd, dhour, heibeg, heiend, heistp, oarr_out, outf_out, datadir, &
-        ddsize)
-    !                   ddsize, aap_, af107_, n_)
+        !        ddsize)
+        ddsize, aap_, af107_, n_)
     logical, intent(in) :: jf(50)
     logical, intent(in) :: jmag
     integer, intent(in) :: gsize
@@ -11,9 +11,9 @@ subroutine iricore(jf, jmag, glat, glon, gsize, iyyyy, mmdd, dhour, heibeg, heie
     real, intent(inout) :: outf_out(20, 1000, gsize)
     integer, intent(in) :: ddsize
     character(ddsize), intent(in) :: datadir
-    !  integer, intent(in) :: aap_(27000, 9)
-    !  real, intent(in) :: af107_(27000, 3)
-    !  integer, intent(in) :: n_
+    integer, intent(in) :: aap_(27000, 9)
+    real, intent(in) :: af107_(27000, 3)
+    integer, intent(in) :: n_
 
     integer :: aap(27000, 9)
     real :: af107(27000, 3)
@@ -32,7 +32,7 @@ subroutine iricore(jf, jmag, glat, glon, gsize, iyyyy, mmdd, dhour, heibeg, heie
   datadir1 = datadir
   call read_ig_rz
   ! TODO: Remove next line later (after applying the fix)
-    call readapf107
+    !    call readapf107
   NITER = SIZE(glat)
 
 
