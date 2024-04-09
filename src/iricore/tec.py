@@ -11,11 +11,13 @@ import pymap3d as pm
 from numpy.ctypeslib import as_ctypes
 
 from .config import IRI_VERSIONS, DEFAULT_IRI_VERSION
-from .iri import iri2016, iri2020, _iri_cfd, iri
+from .iri import iri2016, iri2020, _iri_cfd, iri, indices_uptodate
 from .iri_flags import get_jf
 from .modules.ion_tools import srange, R_EARTH
 from .raytracing import raytrace
 
+
+# TODO: Pass read indices to tecs as well
 
 def _clean_ne_for_tec(ne):
     if np.any(np.isnan(ne)) or np.any(np.isinf(ne)):
@@ -51,7 +53,6 @@ def _slant2steps(rslant: np.ndarray):
     return step
 
 
-
 def vtec(dt: datetime, lat: float | np.ndarray, lon: float | np.ndarray, hbot: float = 90,
          htop: float = 2000, hstep: float = 0.5,
          version: Literal[16, 20] = DEFAULT_IRI_VERSION,
@@ -71,7 +72,7 @@ def vtec(dt: datetime, lat: float | np.ndarray, lon: float | np.ndarray, hbot: f
                :func:`iricore.get_jf` for details. If not specified otherwise, the default IRI JF array will be used.
     :return: Slant TEC.
     """
-
+    indices_uptodate(dt)
     if hbot < 60 or htop > 2000:
         raise ValueError("The limits of integration cannot exceed (60, 2000) km.")
 
@@ -124,6 +125,7 @@ def stec(el: float, az: float, dt: datetime, lat: float, lon: float, hobs: float
                         Dict keys: ['lat', 'lon', 'h', 'edens']
     :return: Slant TEC.
     """
+    indices_uptodate(dt)
     if hbot < 60 or htop > 2000:
         raise ValueError("The limits of integration cannot exceed (60, 2000) km.")
     el = np.array(el)
@@ -186,7 +188,7 @@ def _call_stec(dt: datetime, heights: Sequence[float], lat: Sequence[float], lon
     datadir = jpath(_iri_cfd, 'data')
     datadir_bytes = bytes(datadir, 'utf-8')
 
-    # aap, af107, nlines = IRI_DATA
+    # aap, af107, nlines = _APF107_DATA
 
     iricore.stec_(as_ctypes(jf), byref(c_bool(jmag)), f_lat, f_lon, f_heights, byref(hsize), byref(iyyyy), byref(mmdd),
                   byref(dhour), as_ctypes(oarr),
@@ -221,6 +223,7 @@ def refstec(el: float, az: float, dt: datetime, lat: float, lon: float, freq: fl
                         Dict keys: ['lat', 'lon', 'h', 'edens']
     :return: Slant TEC.
     """
+    indices_uptodate(dt)
     if hbot < 60 or htop > 2000:
         raise ValueError("The limits of integration cannot exceed (60, 2000) km.")
 
@@ -239,7 +242,7 @@ def refstec(el: float, az: float, dt: datetime, lat: float, lon: float, freq: fl
     else:
         if isinstance(jf, np.ndarray) and jf.size != 50:
             raise ValueError("Length of jf array must be 50")
-
+    # TODO: pass jf to raytrace
     pos = (lat, lon, hobs)
     history = raytrace(el, az, freq, pos, heights, dt)
     ne = history["edens"]

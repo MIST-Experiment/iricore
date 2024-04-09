@@ -10,15 +10,15 @@ import numpy as np
 from numpy.ctypeslib import as_ctypes
 
 from .config import IRI_VERSIONS, DEFAULT_IRI_VERSION
+from .data_update import update
 from .iri_flags import get_jf
 from .irioutput import IRIOutput
-from .read_iri_data import readapf107
+from .read_iri_data import read_apf107
 
 _iri_cfd = os.path.dirname(os.path.abspath(__file__))
 
-# TODO: Fix data reading from Python
-# TODO: Check if data works for all files
-_APF107_DATA = readapf107()
+_APF107_DATA, _LAST_DATE = read_apf107()
+
 
 try:
     iri2016 = np.ctypeslib.load_library("libiri2016", _iri_cfd)
@@ -34,6 +34,18 @@ except OSError:
             >>> make
         """
     )
+
+
+def indices_uptodate(dt: datetime):
+    global _APF107_DATA, _LAST_DATE
+    if dt > _LAST_DATE:
+        print("Requested date is not covered in database. Updating indices.")
+        if update():
+            _APF107_DATA, _LAST_DATE = read_apf107()
+            if dt > _LAST_DATE:
+                raise RuntimeError("Requested indices are not available yet. The update latency is usually 2-3 days.")
+        else:
+            raise RuntimeError("Cannot update indices. Check internet connection.")
 
 
 def iri(dt: datetime, altrange: Annotated[Sequence[float], 3], lat: float | Sequence[float],
@@ -75,6 +87,7 @@ def iri(dt: datetime, altrange: Annotated[Sequence[float], 3], lat: float | Sequ
 
     :return: :class:`iricore.IRIOutput` dataclass.
     """
+    indices_uptodate(dt)
     lat = np.atleast_1d(np.asarray(lat))
     lon = np.atleast_1d(np.asarray(lon))
     if not len(lat) == len(lon):

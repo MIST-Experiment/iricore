@@ -1,14 +1,15 @@
 import os
+from datetime import datetime
 
 import fortranformat as ff
 import numpy as np
 
 _iri_cfd = os.path.dirname(os.path.abspath(__file__))
+_datadir = os.path.join(_iri_cfd, f"data/")
 
 
-def readapf107():
-    datadir = os.path.join(_iri_cfd, f"data/")
-    with open(os.path.join(datadir, "index/apf107.dat"), "r") as file:
+def read_apf107():
+    with open(os.path.join(_datadir, "index/apf107.dat"), "r") as file:
         lines = file.readlines()
     nlines = len(lines)
     linereader = ff.FortranRecordReader("(13I3, 3F5.1)")
@@ -23,4 +24,6 @@ def readapf107():
     af107[:nlines, 2] = np.where(f107_365 < -4, f107d, f107_365)
     aap = np.zeros((27000, 9), order='F', dtype=np.int32)
     aap[:nlines, :] = data[:, 3:12].astype(np.int32)
-    return aap, af107, nlines
+    ly, lm, ld = data[nlines - 1, :3].astype(np.int8)
+    last_date = datetime(ly + 2000, lm, ld)
+    return (aap, af107, nlines), last_date

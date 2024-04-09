@@ -2,7 +2,6 @@ def update():
     """
     Download the newest version of files with solar indices. The files are updated daily.
     """
-    # TODO: Save latest update date and implement autoupdating
     from urllib import request, error
     import os
     location = os.path.dirname(os.path.abspath(__file__))
@@ -15,6 +14,8 @@ def update():
             'https://chain-new.chain-project.net/echaim_downloads/ig_rz.dat',
             os.path.join(location, f'data/index/ig_rz.dat')
         )
-        print('The index data was successfully updated!')
+        print('The index data was successfully updated')
+        return True
     except error.URLError:
-        print('Something went wrong. Check internet connection.')
+        print('Failed to update indices. Check internet connection.')
+        return False
