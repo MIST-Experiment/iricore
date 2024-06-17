@@ -14,13 +14,13 @@ If you are using Windows - consider installing [WSL](https://docs.microsoft.com/
 - CMAKE
 
 ```
-sudo apt instal cmake
+sudo apt install cmake
 ```
 
 - Fortran compiler, e.g. `gfortran`
 
 ```
-sudo apt isntall gfortran
+sudo apt install gfortran
 ```
 
 ### Installing package

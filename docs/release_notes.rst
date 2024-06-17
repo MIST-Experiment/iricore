@@ -1,6 +1,13 @@
 Release notes
 -------------
 
+v1.8.1
+======
+* Implemented autoupdate of indices
+* Fixed reading IRI data to memory in master Python process - now `iricore`
+  should be faster when called repeatedly in a loop.
+* Small bugfixes and refactoring.
+
 v1.8.0
 ======
 * Updated IRI-2020 to the 03/05/2024 version.
