@@ -1,6 +1,10 @@
 Release notes
 -------------
 
+v1.8.2
+======
+* Fixed binary compilation bug during installation on MacOS
+
 v1.8.1
 ======
 * Implemented autoupdate of indices

@@ -12,14 +12,13 @@ __all__ = ("build",)
 def build(setup_kwargs: Dict[str, Any]) -> None:
     """Build Fortran-extensions."""
     skbuild.setup(**setup_kwargs, script_args=["build_ext"])
+
     src_dir = Path(skbuild.constants.CMAKE_INSTALL_DIR()) / "irilib"
     dest_dir = Path("src/iricore")
-
     # Delete C-extensions copied in previous runs, just in case.
-    remove_files(dest_dir, "**/*.so")
-
+    remove_files(dest_dir, "**/*libiri*")
     # Copy built C-extensions back to the project.
-    copy_files(src_dir, dest_dir, "**/*.so")
+    copy_files(src_dir, dest_dir, "**/*libiri*")
 
 
 def remove_files(target_dir: Path, pattern: str) -> None:

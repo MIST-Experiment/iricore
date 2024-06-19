@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iricore"
-version = "1.8.1"
+version = "1.8.2s"
 description = "A Python wraper to the Inernational Ionosphere Model"
 authors = ["Vadym Bidula <vadym.bidula@gmail.com>"]
 readme = "README.md"
