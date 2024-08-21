@@ -1,5 +1,8 @@
 Release notes
 -------------
+v1.8.3
+======
+* Dependencies updated
 
 v1.8.2
 ======

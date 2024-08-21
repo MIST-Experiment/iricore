@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iricore"
-version = "1.8.2"
+version = "1.8.3"
 description = "A Python wraper to the Inernational Ionosphere Model"
 authors = ["Vadym Bidula <vadym.bidula@gmail.com>"]
 readme = "README.md"
@@ -14,6 +14,7 @@ include = [
     {path = "src/iricore/iri2020/*.for", format = "sdist"},
     # Generated binaries must be included in the wheel distribution.
     {path = "iricore/*.so", format = "wheel"},
+    {path = "iricore/*.dylib", format = "wheel"},
 ]
 
 [tool.poetry.dependencies]
