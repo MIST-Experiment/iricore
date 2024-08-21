@@ -14,6 +14,7 @@ include = [
     {path = "src/iricore/iri2020/*.for", format = "sdist"},
     # Generated binaries must be included in the wheel distribution.
     {path = "iricore/*.so", format = "wheel"},
+    {path = "iricore/*.dylib", format = "wheel"},
 ]
 
 [tool.poetry.dependencies]
