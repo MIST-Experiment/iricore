@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iricore"
-version = "1.8.3"
+version = "1.9.0"
 description = "A Python wraper to the Inernational Ionosphere Model"
 authors = ["Vadym Bidula <vadym.bidula@gmail.com>"]
 readme = "README.md"
@@ -27,6 +27,7 @@ pymap3d = { extras = ["core"], version = "^3.0.1" }
 tqdm = "^4.65.0"
 matplotlib = "^3.7.2"
 jupyter = "^1.0.0"
+iri2016 = "^1.11.1"
 
 [tool.poetry.group.build.dependencies]
 scikit-build = "^0.17.6"

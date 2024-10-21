@@ -15,9 +15,9 @@ from .iri import iri2016, iri2020, _iri_cfd, iri, indices_uptodate
 from .iri_flags import get_jf
 from .modules.ion_tools import srange, R_EARTH
 from .raytracing import raytrace
+from .read_iri_data import read_apf107
 
-
-# TODO: Pass read indices to tecs as well
+_APF107_DATA, _LAST_DATE = read_apf107()
 
 def _clean_ne_for_tec(ne):
     if np.any(np.isnan(ne)) or np.any(np.isinf(ne)):
@@ -56,7 +56,7 @@ def _slant2steps(rslant: np.ndarray):
 def vtec(dt: datetime, lat: float | np.ndarray, lon: float | np.ndarray, hbot: float = 90,
          htop: float = 2000, hstep: float = 0.5,
          version: Literal[16, 20] = DEFAULT_IRI_VERSION,
-         jf: np.ndarray | str = None):
+         jf: np.ndarray | str = None, **kwargs):
     """
     Vertical TEC calculated by integrating the electron density on the line of sight. This function
     is not a part of the source IRI code.
@@ -70,7 +70,26 @@ def vtec(dt: datetime, lat: float | np.ndarray, lon: float | np.ndarray, hbot: f
     :param version: IRI version number.
     :param jf: Array of JF parameters or string for predefined JF arrays to be used in the IRI_SUB function. See
                :func:`iricore.get_jf` for details. If not specified otherwise, the default IRI JF array will be used.
-    :return: Slant TEC.
+    :param kwargs: Use it to enter user input values for the IRI calculation. Names of parameters are
+                   'oarr'+'[oarr index you want to modify]'. Available parameters are:
+
+                   * **oarr0** - float - user input for foF2/MHz or NmF2/m-3
+                   * **oarr1** - float - user input for hmF2/km or M(3000)F2
+                   * **oarr2** - float - user input for foF1/MHz or NmF1/m-3
+                   * **oarr3** - float - user input for hmF1/km
+                   * **oarr4** - float - user input for foE/MHz or NmE/m-3
+                   * **oarr5** - float - user input for hmE/km
+                   * **oarr9** - float - user input for B0
+                   * **oarr14** - (float, float) - user input for Ne(300km), Ne(400km)/m-3. Use oarr14[...]=-1 if one of
+                     these values is not available. If jf(22)==False then Ne(300km), Ne(550km)/m-3.
+                   * **oarr32** - float - user input for Rz12
+                   * **oarr34** - float - user input for B1
+                   * **oarr38** - float - user input for IG12
+                   * **oarr40** - float - user input for daily F10.7 index (make sure to also specify oarr45, otherwise it
+                     will be copied from oarr40)
+                   * **oarr45** - float - user input for 81-day avg F10.7
+
+    :return: Vertical TEC.
     """
     indices_uptodate(dt)
     if hbot < 60 or htop > 2000:
@@ -95,7 +114,7 @@ def vtec(dt: datetime, lat: float | np.ndarray, lon: float | np.ndarray, hbot: f
 
     tec = 0.
     for i in range(nstages):
-        iri_res = iri(dt, stage_ranges[i], lat, lon, version, jf)
+        iri_res = iri(dt, stage_ranges[i], lat, lon, version, jf, **kwargs)
         tec += _integrate_ne(_clean_ne_for_tec(iri_res.edens), hstep)
     return tec
 
@@ -103,7 +122,7 @@ def vtec(dt: datetime, lat: float | np.ndarray, lon: float | np.ndarray, hbot: f
 def stec(el: float, az: float, dt: datetime, lat: float, lon: float, hobs: float = 0, hbot: float = 90,
          htop: float = 2000, npoints: int = 1000, heights: np.ndarray = None,
          version: Literal[16, 20] = DEFAULT_IRI_VERSION,
-         jf: np.ndarray | str = None, return_hist: bool = False) -> float | Sequence:
+         jf: np.ndarray | str = None, return_details: bool = False, **kwargs) -> float | Sequence:
     """
     Slant TEC calculated by integrating the electron density on the line of sight. This function
     is not a part of the source IRI code.
@@ -121,8 +140,27 @@ def stec(el: float, az: float, dt: datetime, lat: float, lon: float, hobs: float
     :param version: IRI version number.
     :param jf: Array of JF parameters or string for predefined JF arrays to be used in the IRI_SUB function. See
                :func:`iricore.get_jf` for details. If not specified otherwise, the default IRI JF array will be used.
-    :param return_hist: If True - also returns history with ray position and corresponding electron density.
-                        Dict keys: ['lat', 'lon', 'h', 'edens']
+    :param return_details: If True - also returns history with ray position, corresponding electron density and the oarr
+                           array. Dict keys: ['lat', 'lon', 'h', 'edens', 'oarr']
+    :param kwargs: Use it to enter user input values for the IRI calculation. Names of parameters are
+                   'oarr'+'[oarr index you want to modify]'. Available parameters are:
+
+                   * **oarr0** - float - user input for foF2/MHz or NmF2/m-3
+                   * **oarr1** - float - user input for hmF2/km or M(3000)F2
+                   * **oarr2** - float - user input for foF1/MHz or NmF1/m-3
+                   * **oarr3** - float - user input for hmF1/km
+                   * **oarr4** - float - user input for foE/MHz or NmE/m-3
+                   * **oarr5** - float - user input for hmE/km
+                   * **oarr9** - float - user input for B0
+                   * **oarr14** - (float, float) - user input for Ne(300km), Ne(400km)/m-3. Use oarr14[...]=-1 if one of
+                     these values is not available. If jf(22)==False then Ne(300km), Ne(550km)/m-3.
+                   * **oarr32** - float - user input for Rz12
+                   * **oarr34** - float - user input for B1
+                   * **oarr38** - float - user input for IG12
+                   * **oarr40** - float - user input for daily F10.7 index (make sure to also specify oarr45, otherwise it
+                     will be copied from oarr40)
+                   * **oarr45** - float - user input for 81-day avg F10.7
+
     :return: Slant TEC.
     """
     indices_uptodate(dt)
@@ -151,21 +189,22 @@ def stec(el: float, az: float, dt: datetime, lat: float, lon: float, hobs: float
         if isinstance(jf, np.ndarray) and jf.size != 50:
             raise ValueError("Length of jf array must be 50")
 
-    iri_res = _call_stec(dt, heights, slat, slon, jf, version)
+    iri_res, oarr = _call_stec(dt, heights, slat, slon, jf, version, **kwargs)
     ne = iri_res[0].transpose()
     ne = ne.reshape((len(heights), -1))[:, 0]
     history['edens'] = ne
+    history['oarr'] = oarr
 
     # Data postprocessing (fixing non-physical IRI output)
     ne = _clean_ne_for_tec(ne)
     tec_res = _integrate_ne(ne, _slant2steps(rslant * 1e-3))
-    if return_hist:
+    if return_details:
         return tec_res, history
     return tec_res
 
 
 def _call_stec(dt: datetime, heights: Sequence[float], lat: Sequence[float], lon: Sequence[float],
-               jf: np.ndarray, version: Literal[16, 20] = DEFAULT_IRI_VERSION):
+               jf: np.ndarray, version: Literal[16, 20] = DEFAULT_IRI_VERSION, **kwargs):
     if version == 16:
         iricore = iri2016
     elif version == 20:
@@ -185,17 +224,61 @@ def _call_stec(dt: datetime, heights: Sequence[float], lat: Sequence[float], lon
     oarr = np.zeros(100, dtype=np.float32, order="F")
     iri_res = np.zeros((20, 1000, len(heights)), dtype=np.float32, order='F')
 
+    # Handling manual user input
+    if len(kwargs) > 0:
+        if "oarr0" in kwargs.keys():
+            jf[7] = 0
+            oarr[0] = kwargs["oarr0"]
+        if "oarr1" in kwargs.keys():
+            jf[8] = 0
+            oarr[1] = kwargs["oarr1"]
+        if "oarr14" in kwargs.keys():
+            jf[9] = 0
+            oarr[14] = kwargs["oarr14"][0]
+            oarr[15] = kwargs["oarr14"][1]
+        if "oarr2" in kwargs.keys():
+            jf[12] = 0
+            oarr[2] = kwargs["oarr2"]
+        if "oarr3" in kwargs.keys():
+            jf[13] = 0
+            oarr[3] = kwargs["oarr3"]
+        if "oarr4" in kwargs.keys():
+            jf[14] = 0
+            oarr[4] = kwargs["oarr4"]
+        if "oarr5" in kwargs.keys():
+            jf[15] = 0
+            oarr[5] = kwargs["oarr5"]
+        if "oarr32" in kwargs.keys():
+            jf[16] = 0
+            oarr[32] = kwargs["oarr32"]
+        if "oarr40" in kwargs.keys():
+            jf[24] = 0
+            oarr[40] = kwargs["oarr40"]
+        if "oarr38" in kwargs.keys():
+            jf[26] = 0
+            oarr[38] = kwargs["oarr38"]
+        if "oarr45" in kwargs.keys():
+            jf[31] = 0
+            oarr[45] = kwargs["oarr45"]
+        if "oarr9" in kwargs.keys():
+            jf[42] = 0
+            oarr[9] = kwargs["oarr9"]
+        if "oarr34" in kwargs.keys():
+            jf[43] = 0
+            oarr[34] = kwargs["oarr34"]
+
     datadir = jpath(_iri_cfd, 'data')
     datadir_bytes = bytes(datadir, 'utf-8')
 
-    # aap, af107, nlines = _APF107_DATA
+    aap, af107, nlines = _APF107_DATA
 
     iricore.stec_(as_ctypes(jf), byref(c_bool(jmag)), f_lat, f_lon, f_heights, byref(hsize), byref(iyyyy), byref(mmdd),
                   byref(dhour), as_ctypes(oarr),
-                  iri_res.ctypes.data_as(POINTER(c_float)), datadir_bytes, byref(c_int(len(datadir))))
+                  iri_res.ctypes.data_as(POINTER(c_float)), datadir_bytes, byref(c_int(len(datadir))),
+                  aap.ctypes.data_as(POINTER(c_float)), af107.ctypes.data_as(POINTER(c_float)), byref(c_int(nlines)))
 
     iri_res = np.ascontiguousarray(iri_res)
-    return iri_res
+    return iri_res, oarr
 
 
 def refstec(el: float, az: float, dt: datetime, lat: float, lon: float, freq: float,

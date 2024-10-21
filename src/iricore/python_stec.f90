@@ -1,6 +1,5 @@
 subroutine stec(jf, jmag, lat, lon, heights, hsize, iyyyy, mmdd, dhour, oarr, iri_res, datadir, &
-        ddsize)
-    !                   ddsize, aap_, af107_, n_)
+        ddsize, aap_, af107_, n_)
     logical, intent(in) :: jf(50)
     logical, intent(in) :: jmag
     integer, intent(in) :: hsize
@@ -11,9 +10,9 @@ subroutine stec(jf, jmag, lat, lon, heights, hsize, iyyyy, mmdd, dhour, oarr, ir
     real, intent(inout) :: iri_res(20, 1000, hsize)
     integer, intent(in) :: ddsize
     character(ddsize), intent(in) :: datadir
-    !  integer, intent(in) :: aap_(27000, 9)
-    !  real, intent(in) :: af107_(27000, 3)
-    !  integer, intent(in) :: n_
+    integer, intent(in) :: aap_(27000, 9)
+    real, intent(in) :: af107_(27000, 3)
+    integer, intent(in) :: n_
 
     integer :: aap(27000, 9)
     real :: af107(27000, 3)
@@ -30,7 +29,7 @@ subroutine stec(jf, jmag, lat, lon, heights, hsize, iyyyy, mmdd, dhour, oarr, ir
   n = n_
   datadir1 = datadir
   call read_ig_rz
-    call readapf107
+  !call readapf107
   NITER = SIZE(heights)
 
 

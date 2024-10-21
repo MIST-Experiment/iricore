@@ -8,8 +8,9 @@ def get_jf(preset: str = 'default') -> np.ndarray:
     The ``'default_edens'`` option additionally disables calculation of all other models, leaving only electron density.
 
     The following table was reconstructed from the IRI official documentation and provides a summary of available
-    IRI parameters. Some of them are not used for use in ``iricore`` because you can directly enter manual user input
-    when calling iricore.iri() (see documentation).
+    IRI parameters. Some of them cannot be used in ``iricore`` because the user input is handled separately.
+    You can directly enter manual user input using iricore.iri() kwargs (see :func:`iricore.iri` documentation),
+    which will modify JF flags automatically.
 
     +------------+-------------------------------+--------------------------------------+---------+------+
     | Index      | If True                       | If False                             | Default | Used |

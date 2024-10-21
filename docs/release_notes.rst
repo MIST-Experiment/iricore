@@ -1,5 +1,9 @@
 Release notes
 -------------
+v1.9.0
+======
+* Added possibility of manual user input to vtec() and stec()
+
 v1.8.3
 ======
 * Dependencies updated

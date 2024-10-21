@@ -11,7 +11,7 @@ author = 'Vadym Bidula'
 email = 'vadym.bidula@gmail.com'
 
 # The full version, including alpha/beta/rc tags
-release = '1.8.3'
+release = '1.9.0'
 
 # -- General configuration ---------------------------------------------------
 
